@@ -36,6 +36,14 @@ with open('config', mode='r') as f:
 with open('watch.json', mode='r') as f:
     last_episode = json.load(f)
 
+for show in parsed_config['anime']:
+    if show not in last_episode.keys():
+        i = input(f'"{show}" does not appear to be in the history file, would you like to add it? [Y/n]')
+        if i not in ('', 'Y', 'y', 'yes', 'Yes'):
+            print('please manualy adjust the config file')
+            sys.exit(1)
+
+        last_episode[show] = 0
 
 url = 'http://horriblesubs.info/current-season/'
 print('fetching feed...')
