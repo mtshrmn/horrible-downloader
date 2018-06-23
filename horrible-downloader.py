@@ -49,6 +49,6 @@ print(f'Beginning download to {path}')
 for show in reversed(to_download):
     subdir = os.path.join(path, show['name'].title())
     call(['webtorrent', show['magnet'], '-o', subdir])
-    config['subscriptions'][show] = show['episode']
-    with open(os.path.join(dir, file), 'w') as f:
+    config['subscriptions'][show['name']] = show['episode']
+    with open(os.path.join(dir, 'conf.ini'), 'w') as f:
         config.write(f)
