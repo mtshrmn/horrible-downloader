@@ -28,6 +28,7 @@ def parse_conf(dir: str, file: str):
 
 
 def get_current_shows():
+    import sys
     from bs4 import BeautifulSoup
     import requests
 
@@ -40,8 +41,8 @@ def get_current_shows():
         sys.exit(1)
 
     soup = BeautifulSoup(html, 'lxml')
-
-    for anime in soup.find_all(name='div', attrs={'class': 'ind-show linkful'}):
+    attributes = {'class': 'ind-show linkful'}
+    for anime in soup.find_all(name='div', attrs=attributes):
         yield anime.a.string.lower()
 
 
