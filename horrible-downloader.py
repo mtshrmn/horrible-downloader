@@ -34,11 +34,11 @@ for show in subscriptions:
 
 call(['clear'])
 
-print(f'Found {len(to_download)} episodes to download:\n\n')
+print(f'\nFound {len(to_download)} episodes to download:\n')
 for episode in to_download:
     print(f'{episode["full name"]}.mkv')
 
-inp = input('\n\nwould you like to proceed? [Y/n] ')
+inp = input('\nwould you like to proceed? [Y/n] ')
 if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
     print('aborting download\n')
     sys.exit(1)
@@ -52,3 +52,4 @@ for show in reversed(to_download):
     config['subscriptions'][show['name']] = show['episode']
     with open(os.path.join(dir, 'conf.ini'), 'w') as f:
         config.write(f)
+    call(['clear'])
