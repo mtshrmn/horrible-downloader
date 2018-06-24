@@ -1,5 +1,3 @@
-
-
 def parse_conf(dir: str, file: str):
     import os
     from configparser import ConfigParser
@@ -55,9 +53,23 @@ def get_episodes(anime: str):
     html = requests.get(url).text
     soup = BeautifulSoup(html, 'lxml')
     matches = soup.find_all(name='a', attrs={'title': 'Magnet Link'})
+    # check if the this are all of the episodes.
+    for item in matches:
+        try:
+            first_match_name = matches[0].parent.parent.parent.text.replace('MagnetTorrentULFUUP', '').lower()
+            first_episode_in_batch = re.search(r'- (\d+) \[', first_match_name.lower()).group(1)
+        except AttributeError:
+            matches = matches[1:]
+
+    for id in range(1, int(int(first_episode_in_batch) / 20) + 1):
+        url = "http://horriblesubs.info/lib/search.php?value=" + \
+            anime.replace(' ', '-') + '&nextid=' + str(id)
+        html = requests.get(url).text
+        soup = BeautifulSoup(html, 'lxml')
+        matches += soup.find_all(name='a', attrs={'title': 'Magnet Link'})
 
     for match in matches:
-        element = element = match.parent.parent.parent
+        element = match.parent.parent.parent
         title = element.text.replace('MagnetTorrentULFUUP', '')
         try:
             yield {
