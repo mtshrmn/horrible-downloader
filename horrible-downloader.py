@@ -68,7 +68,7 @@ def main(download, custom_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='horribly download anime')
-    parser.add_argument('-d', '--download', help="download a specific animer", type=str)
+    parser.add_argument('-d', '--download', help="download a specific anime", type=str)
 
     parser.add_argument('-o', '--output', help="directory to which it will download the files",
                         type=str)
