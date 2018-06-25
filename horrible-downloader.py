@@ -15,32 +15,24 @@ def main(download, custom_dir):
     download_dir = config['settings']['download_dir'] if not custom_dir else custom_dir
     subscriptions = config['subscriptions'] if not download else {download: 0}
 
-    # check integrity of quality
-    if quality not in ('480', '720', '1080'):
-        print(f'{quality} isn\'t a valid option. please choose from [480|720|1080]')
-        sys.exit(1)
-
     # get the currently airing shows:
     print('fetching feed...')
-    if not download:
-        airing = list(get_current_shows())
-    else:
-        airing = []
+    airing = list(get_current_shows()) if not download else []
 
     to_download = []
     for show in subscriptions:
         # check integrity of subscriptions
-        if show not in airing and not download:
+        if not download and show not in airing:
             print(f'"{show.title()}" doesn\'t currently air. please fix this in the configuration file')
             sys.exit(1)
         last_episode_watched = int(subscriptions[show])
-        episodes = list(get_episodes(show))
+        episodes = get_episodes(show)
         filter_key = lambda e: int(e['episode']) > last_episode_watched and quality in e['full name']
-        to_download += [episode for episode in filter(filter_key, episodes)]
+        to_download.extend(filter(filter_key, episodes))
 
-    if len(to_download) is 0:
+    if not to_download:
         print('No new episodes were found. Exiting ')
-        sys.exit(1)
+        sys.exit(0)
 
     call(['clear'])
 
@@ -68,10 +60,9 @@ def main(download, custom_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='horribly download anime')
-    parser.add_argument('-d', '--download', help="download a specific anime", type=str)
-
+    parser.add_argument('-d', '--download',
+                        help="download a specific anime", type=str)
     parser.add_argument('-o', '--output', help="directory to which it will download the files",
                         type=str)
-
     args = parser.parse_args()
     main(args.download, args.output)
