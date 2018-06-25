@@ -54,6 +54,7 @@ def get_episodes(anime: str):
     soup = BeautifulSoup(html, 'lxml')
     matches = soup.find_all(name='a', attrs={'title': 'Magnet Link'})
     # check if the this are all of the episodes.
+    first_episode_in_batch = None
     for item in matches:
         try:
             first_match_name = matches[0].parent.parent.parent.text.replace('MagnetTorrentULFUUP', '').lower()
@@ -61,12 +62,13 @@ def get_episodes(anime: str):
         except AttributeError:
             matches = matches[1:]
 
-    for id in range(1, int(int(first_episode_in_batch) / 20) + 1):
-        url = "http://horriblesubs.info/lib/search.php?value=" + \
-            anime.replace(' ', '-') + '&nextid=' + str(id)
-        html = requests.get(url).text
-        soup = BeautifulSoup(html, 'lxml')
-        matches += soup.find_all(name='a', attrs={'title': 'Magnet Link'})
+    if first_episode_in_batch:
+        for id in range(1, int(int(first_episode_in_batch) / 20) + 1):
+            url = "http://horriblesubs.info/lib/search.php?value=" + \
+                anime.replace(' ', '-') + '&nextid=' + str(id)
+            html = requests.get(url).text
+            soup = BeautifulSoup(html, 'lxml')
+            matches += soup.find_all(name='a', attrs={'title': 'Magnet Link'})
 
     for match in matches:
         element = match.parent.parent.parent
