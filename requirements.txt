@@ -1,0 +1,7 @@
+beautifulsoup4==4.6.3
+bs4==0.0.1
+lxml==4.2.5
+pip==10.0.1
+requests==2.19.1
+setuptools==39.0.1
+urllib3==1.23
