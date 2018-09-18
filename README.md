@@ -20,10 +20,17 @@ $ pip install -r requirements.txt
 ## Usage
 example usage of the API
 ```python
-from HorribleDownloader import Parser
-hs_parser = Parser(conf_dir=".")
+from HorribleDownloader import Parser, ConfigManager
 
-current = hs_parser.get_current_shows()
+p = Parser()
+config = ConfigManager()
+
+download = []
+for show, last_watched in config.subscriptions:
+    episodes = p.get_episodes(show)
+    new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
+    download.extend(new)
+    
 ```
 
 ## Configuration
