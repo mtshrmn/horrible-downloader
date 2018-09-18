@@ -2,12 +2,10 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import difflib
-from configparser import ConfigParser
-import os
 
 
 class Parser:
-    def __init__(self, conf_dir="."):
+    def __init__(self):
         self.api = "https://horriblesubs.info/api.php"
         self.id_file = "id.json"
         self.query = {
@@ -18,14 +16,6 @@ class Parser:
         self.shows = dict(self._get_shows())
         self.shows["JoJo's Bizarre Adventure - Stardust Crusaders Egypt Arc"] = \
             'jojos-bizarre-adventure-stardust-crusaders'
-
-        self.dir = conf_dir
-        self.file = "conf.ini"
-        self.conf = self._parse_conf()
-
-        self.quality = self.conf['settings']['resolution']
-        self.download_dir = self.conf['settings']['download_dir']
-        self.subscriptions = self.conf['subscriptions']
 
     def _get_show_id(self, show: str) -> int:
         show = show.replace('&amp;', '&')
@@ -96,23 +86,3 @@ class Parser:
         div = soup.find(name="div", attrs={"class": "shows-wrapper"})
         for anime in div.find_all(name='a'):
             yield anime["title"]
-
-    def _parse_conf(self):
-        conf = ConfigParser()
-        success = conf.read(os.path.join(self.dir, self.file))
-        if not success:
-            print('No config file found, Generating from default')
-            print('Please check your config before proceeding')
-
-            conf['settings'] = {
-                'resolution': '1080',
-                'download_dir': '~/Videos'
-            }
-
-            conf['subscriptions'] = dict((show, 0) for show in self.get_current_shows())
-
-            with open(os.path.join(self.dir, self.file), 'w') as f:
-                conf.write(f)
-
-        assert conf['settings']['resolution'] in ('480', '720', '1080')
-        return conf

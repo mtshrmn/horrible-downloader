@@ -1,1 +1,2 @@
 from HorribleDownloader.parser import Parser
+from HorribleDownloader.config_manager import ConfigManager
