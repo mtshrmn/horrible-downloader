@@ -13,22 +13,19 @@ Plus it also makes a `history` file for keeping track of which magnets have been
 ```sh
 $ git clone https://github.com/jelomite/horrible-downloader.git
 $ cd horrible-downloader
+$ pip install .
+$ pip install -r requirements.txt
 ```
 
 ## Usage
-just run the script
-```sh
-$ python horrible-downloader.py
+example usage of the API
+```python
+from HorribleDownloader import Parser
+hs_parser = Parser(conf_dir=".")
+
+current = hs_parser.get_current_shows()
 ```
 
 ## Configuration
-for the default configuration, which includes all of the current season shows, you can simply enter the following command:
-```sh
-$ python horrible-downloader.py --generate-config
-```
-once generated, you will see the config file in the same directory as the script. you can modify it as you wish.
-
-
-## Requirements
-* [feedparser](https://pypi.python.org/pypi/feedparser)
-* [webtorrent-cli](https://github.com/webtorrent/webtorrent-cli)
+By default, once the `Parser()` is called, the configuration file will be generated.
+The default is all of the current airing shows. Simply go to the directory specified (default is in current directory) and change the relevant values.
