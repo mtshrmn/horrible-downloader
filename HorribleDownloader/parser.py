@@ -35,7 +35,7 @@ class Parser:
         html = ""
         while True:
             response = requests.get(self.api, params=self.query)
-            if response.text == "DONE" or self.query["nextid"] >= int(limit / 12):
+            if response.text == "DONE" or self.query["nextid"] > int(limit / 12):
                 break
             html += response.text
             self.query["nextid"] += 1
@@ -51,7 +51,7 @@ class Parser:
             links = downloads.find_all(name="a", href=True)
             ret = {
                 "title": rls_label.find(text=True, recursive=False).strip(" "),
-                "episode": episode.find(name="strong").text,
+                "episode": episode.find(name="strong").text.replace('v2', ''),
                 "480": {},
                 "720": {},
                 "1080": {}
