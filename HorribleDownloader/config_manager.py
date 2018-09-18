@@ -30,9 +30,11 @@ class ConfigManager:
 
         conf.read(specified_conf)
 
-        assert conf['settings']['resolution'] in ('480', '720', '1080')
-        assert type(conf['settings']['download_dir']) is str
+        if not conf['settings']['resolution'] in ('480', '720', '1080'):
+            raise AssertionError
+        if not isinstance(conf['settings']['download_dir'], str):
+            raise AssertionError
         for sub in conf['subscriptions']:
-            type(int(conf['subscriptions'][sub]))
+            float(conf['subscriptions'][sub])
             # simple check to validate all of the subscriptions
         return conf
