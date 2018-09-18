@@ -14,7 +14,7 @@ class ConfigManager:
 
         self.quality = self.conf['settings']['resolution']
         self.download_dir = self.conf['settings']['download_dir']
-        self.subscriptions = self.conf['subscriptions']
+        self.subscriptions = self.conf['subscriptions'].items()
 
     def _parse_conf(self):
         conf = ConfigParser()
