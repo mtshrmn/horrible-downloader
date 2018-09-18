@@ -5,7 +5,7 @@ with open("README.md", 'r') as f:
 
 setup(
     name='Horrible-Downloader',
-    version='0.0.3',
+    version='0.0.4',
     packages=['HorribleDownloader'],
     url='https://github.com/Jelomite/horrible-downloader',
     license='MIT',
@@ -14,6 +14,11 @@ setup(
     description='HorribleSubs API',
     long_description=long_description,
     long_description_content_type="text/markdown",
+    install_requires=[
+        'beautifulsoup4>=4',
+        'requests>=2',
+        'lxml>=4'
+    ],
     classifiers=(
         "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: MIT License",
