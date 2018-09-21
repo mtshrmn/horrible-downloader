@@ -3,8 +3,11 @@ import os
 
 
 class ConfigManager:
-    def __init__(self, conf_dir="."):
+    def __init__(self, conf_dir=os.path.expanduser("~/.config/horrible-downloader/")):
         self.dir = conf_dir
+        if not os.path.exists(self.dir):
+            os.makedirs(self.dir)
+
         self.file = "conf.ini"
         try:
             self.conf = self._parse_conf()
