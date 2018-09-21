@@ -19,6 +19,7 @@ setup(
         'requests>=2',
         'lxml>=4'
     ],
+    scripts=["bin/horrible-downloader"],
     classifiers=(
         "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: MIT License",

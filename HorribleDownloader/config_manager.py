@@ -1,10 +1,14 @@
 from configparser import ConfigParser
 import os
+import shutil
 
 
 class ConfigManager:
-    def __init__(self, conf_dir="."):
+    def __init__(self, conf_dir=os.path.expanduser("~/.config/horrible-downloader/")):
         self.dir = conf_dir
+        if not os.path.exists(self.dir):
+            os.makedirs(self.dir)
+
         self.file = "conf.ini"
         try:
             self.conf = self._parse_conf()
@@ -24,9 +28,7 @@ class ConfigManager:
             print('Couldn\'t find configuration file at specified directory.')
             print('Generating from default')
             default_conf = os.path.join('HorribleDownloader', 'default_conf.ini')
-            with open(specified_conf, 'w') as s:
-                conf.read(default_conf)
-                conf.write(s)
+            shutil.copyfile(os.path.expanduser(default_conf), specified_conf)
 
         conf.read(specified_conf)
 

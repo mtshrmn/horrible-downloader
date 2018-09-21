@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+
+from HorribleDownloader import Parser, ConfigManager
+import os
+import argparse
+import subprocess
+
+
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def main(d, o):
+    clear()
+    p = Parser()
+    config = ConfigManager()
+
+    # change to custom download dir if user has specified
+    if o:
+        config.download_dir = o
+
+    print('fetching feed...')
+    download = []
+    for show, last_watched in config.subscriptions if not d else (d, 0):
+        episodes = p.get_episodes(show)
+        new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
+        download.extend(new)
+
+    if not download:
+        if d:
+            print("Couldn't find specified anime. Exiting")
+        else:
+            print('No new episodes were found. Exiting ')
+        exit(1)
+
+    print(f'\nFound {len(download)} episodes to download:\n')
+    for episode in download:
+        print(f'{episode["title"]} - {episode["episode"]} [{config.quality}p].mkv')
+
+    inp = input('\nwould you like to proceed? [Y/n] ')
+    if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
+        print('aborting download\n')
+        exit(1)
+
+    # let the downloads begin!
+    path = os.path.expanduser(config.download_dir)
+    print(f'Beginning download to {path}')
+    for show in reversed(download):
+        subdir = os.path.join(path, show['title'].title())
+        subprocess.call(['webtorrent', show[config.quality]['Magnet'], '-o', subdir])
+        if not download:
+            config.conf['subscriptions'][show['title']] = show['episode']
+            with open(os.path.join(config.dir, config.file), 'w') as f:
+                config.conf.write(f)
+            clear()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='horrible script for downloading anime')
+    parser.add_argument('-d', '--download', help="download a specific anime", type=str)
+    parser.add_argument('-o', '--output', help="directory to which it will download the files", type=str)
+    args = parser.parse_args()
+    main(args.download, args.output)
