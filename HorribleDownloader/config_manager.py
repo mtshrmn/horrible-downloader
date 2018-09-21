@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 import os
+import shutil
 
 
 class ConfigManager:
@@ -27,9 +28,7 @@ class ConfigManager:
             print('Couldn\'t find configuration file at specified directory.')
             print('Generating from default')
             default_conf = os.path.join('HorribleDownloader', 'default_conf.ini')
-            with open(specified_conf, 'w') as s:
-                conf.read(default_conf)
-                conf.write(s)
+            shutil.copyfile(os.path.expanduser(default_conf), specified_conf)
 
         conf.read(specified_conf)
 
