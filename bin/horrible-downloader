@@ -3,6 +3,7 @@
 from HorribleDownloader import Parser, ConfigManager
 import os
 import argparse
+import subprocess
 
 
 def clear():
@@ -13,7 +14,7 @@ def main(d, o):
     clear()
     p = Parser()
     config = ConfigManager()
-
+    print('fetching feed...')
     download = []
     for show, last_watched in config.subscriptions if not d else (d, 0):
         episodes = p.get_episodes(show)
@@ -36,7 +37,17 @@ def main(d, o):
         print('aborting download\n')
         exit(1)
 
-    # TODO: send the magnets to the downloads manager.
+    # let the downloads begin!
+    path = os.path.expanduser(config.download_dir)
+    print(f'Beginning download to {path}')
+    for show in reversed(download):
+        subdir = os.path.join(path, show['title'].title())
+        subprocess.call(['webtorrent', show[config.quality]['Magnet'], '-o', subdir])
+        if not download:
+            config.conf['subscriptions'][show['title']] = show['episode']
+            with open(os.path.join(config.dir, config.file), 'w') as f:
+                config.conf.write(f)
+            clear()
 
 
 if __name__ == "__main__":
