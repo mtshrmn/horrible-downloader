@@ -5,7 +5,7 @@ with open("README.md", 'r') as f:
 
 setup(
     name='Horrible-Downloader',
-    version='0.0.4',
+    version='0.1.0',
     packages=['HorribleDownloader'],
     url='https://github.com/Jelomite/horrible-downloader',
     license='MIT',
