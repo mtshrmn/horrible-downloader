@@ -1,6 +1,6 @@
-beautifulsoup4==4.6.3
-lxml==4.2.5
-pip==10.0.1
-requests==2.19.1
-setuptools==39.0.1
-urllib3==1.23
+beautifulsoup4>=4
+lxml>=4
+pip>=10
+requests>=2
+setuptools>=39.0.1
+urllib3>=1.23
