@@ -14,6 +14,11 @@ def main(d, o):
     clear()
     p = Parser()
     config = ConfigManager()
+
+    # change to custom download dir if user has specified
+    if o:
+        config.download_dir = o
+
     print('fetching feed...')
     download = []
     for show, last_watched in config.subscriptions if not d else (d, 0):
