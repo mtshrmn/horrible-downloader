@@ -50,7 +50,7 @@ def main(d, o):
         subdir = os.path.join(path, show['title'].title())
         subprocess.call(['webtorrent', show[config.quality]['Magnet'], '-o', subdir])
         if not d:
-            config.conf['subscriptions'][show['title']] = show['episode']
+            config.conf['subscriptions'][show['title']] = show['episode'].lstrip('0')
             with open(os.path.join(config.dir, config.file), 'w') as f:
                 config.conf.write(f)
             clear()
