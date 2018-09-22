@@ -1,9 +1,8 @@
-Horrible Downloader
-==============
+# Horrible Downloader    [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4a13ba5715f94427998e63968ea710d7)](https://app.codacy.com/app/Jelomite/horrible-downloader?utm_source=github.com&utm_medium=referral&utm_content=Jelomite/horrible-downloader&utm_campaign=Badge_Grade_Settings)
+
 ![horrible subs banner](http://horriblesubs.info/images/b/ccs_banner.jpg)
 
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4a13ba5715f94427998e63968ea710d7)](https://app.codacy.com/app/Jelomite/horrible-downloader?utm_source=github.com&utm_medium=referral&utm_content=Jelomite/horrible-downloader&utm_campaign=Badge_Grade_Settings)
 
 *Horrible Downloader* is a Python wrapper around the [HorribleSubs](https://horriblesubs.info/) API. It comes with a powerful set of extra features, which allow users to automatically download new episodes and batches of existing shows. The module tracks the downloaded files and allows you to continue from where you left. 
 
