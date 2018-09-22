@@ -27,8 +27,8 @@ class ConfigManager:
         if not success:
             print('Couldn\'t find configuration file at specified directory.')
             print('Generating from default')
-            default_conf = os.path.join('HorribleDownloader', 'default_conf.ini')
-            shutil.copyfile(os.path.expanduser(default_conf), specified_conf)
+            default_conf = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'default_conf.ini')
+            shutil.copyfile(default_conf, specified_conf)
 
         conf.read(specified_conf)
 

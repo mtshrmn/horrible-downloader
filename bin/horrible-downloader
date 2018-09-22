@@ -12,7 +12,6 @@ def clear():
 
 def main(d, o):
     clear()
-    p = Parser()
     config = ConfigManager()
 
     # change to custom download dir if user has specified
@@ -20,6 +19,8 @@ def main(d, o):
         config.download_dir = o
 
     print('fetching feed...')
+    p = Parser()
+
     download = []
     for show, last_watched in config.subscriptions if not d else (d, 0):
         episodes = p.get_episodes(show)
@@ -48,7 +49,7 @@ def main(d, o):
     for show in reversed(download):
         subdir = os.path.join(path, show['title'].title())
         subprocess.call(['webtorrent', show[config.quality]['Magnet'], '-o', subdir])
-        if not download:
+        if not d:
             config.conf['subscriptions'][show['title']] = show['episode']
             with open(os.path.join(config.dir, config.file), 'w') as f:
                 config.conf.write(f)

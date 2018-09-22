@@ -20,6 +20,8 @@ setup(
         'lxml>=4'
     ],
     scripts=["bin/horrible-downloader"],
+    include_package_data=True,
+    zip_safe=False,
     classifiers=(
         "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: MIT License",
