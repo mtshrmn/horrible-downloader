@@ -22,7 +22,7 @@ def main(d, o):
     p = Parser()
 
     download = []
-    for show, last_watched in config.subscriptions if not d else (d, 0):
+    for show, last_watched in config.subscriptions if not d else [(d, 0)]:
         episodes = p.get_episodes(show)
         new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
         download.extend(new)
