@@ -22,13 +22,14 @@ def main(d, o, e):
     p = Parser()
 
     custom_episodes = []
-    for erange in e.split(','):
-        r = erange.split('-')
-        print(r)
-        if len(r) is 2:
-            custom_episodes.extend(range(int(r[0]), int(r[1]) + 1))
-        elif len(r) is 1:
-            custom_episodes.append(int(r[0]))
+    if e:
+        for erange in e.split(','):
+            r = erange.split('-')
+            print(r)
+            if len(r) is 2:
+                custom_episodes.extend(range(int(r[0]), int(r[1]) + 1))
+            elif len(r) is 1:
+                custom_episodes.append(int(r[0]))
 
     download = []
     for show, last_watched in config.subscriptions if not d else [(d, 0)]:
