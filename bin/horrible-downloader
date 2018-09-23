@@ -23,9 +23,13 @@ def main(d, o):
 
     download = []
     for show, last_watched in config.subscriptions if not d else [(d, 0)]:
-        episodes = p.get_episodes(show)
-        new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
-        download.extend(new)
+        batches = p.get_batches(show)
+        if not batches:
+            episodes = p.get_episodes(show)
+            new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
+            download.extend(new)
+        else:
+            download.extend(batches)
 
     if not download:
         if d:
@@ -34,7 +38,7 @@ def main(d, o):
             print('No new episodes were found. Exiting ')
         exit(1)
 
-    print(f'\nFound {len(download)} episodes to download:\n')
+    print(f'\nFound {len(download)} {"files" if len(download) > 1 else "file"} to download:\n')
     for episode in download:
         print(f'{episode["title"]} - {episode["episode"]} [{config.quality}p].mkv')
 
