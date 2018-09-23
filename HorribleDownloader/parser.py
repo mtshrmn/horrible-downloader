@@ -13,9 +13,6 @@ class Parser:
             "type": "show",
             "nextid": 0
         }
-        self.shows = dict(self._get_shows())
-        self.shows["JoJo's Bizarre Adventure - Stardust Crusaders Egypt Arc"] = \
-            'jojos-bizarre-adventure-stardust-crusaders'
 
     def _get_show_id(self, show: str) -> int:
         show = show.replace('&amp;', '&')
@@ -63,23 +60,30 @@ class Parser:
 
             yield ret
 
-    @staticmethod
-    def _get_shows():
+    @property
+    def shows(self):
+        ret = {}
         url = "https://horriblesubs.info/shows/"
         html = requests.get(url).text
         soup = BeautifulSoup(html, "lxml")
         div = soup.find(name="div", attrs={"class": "shows-wrapper"})
         shows = div.find_all(name="a")
         for show in shows:
-            yield show["title"], show["href"].replace("/shows/", "")
+            if show["title"] == "JoJo's Bizarre Adventure - Stardust Crusaders Egypt Arc":
+                href = 'jojos-bizarre-adventure-stardust-crusaders'
+            else:
+                href = show["href"].replace("/shows/", "")
+            ret[show["title"]] = href
+
+        return ret
 
     def get_episodes(self, show: str, limit=1000):
         showid = self._get_show_id(show)
         html = self._get_html(showid, limit)
         return list(self._parse_html(html))
 
-    @staticmethod
-    def get_current_shows():
+    @property
+    def current_shows(self):
         url = 'https://horriblesubs.info/current-season/'
         html = requests.get(url).text
         soup = BeautifulSoup(html, 'lxml')
