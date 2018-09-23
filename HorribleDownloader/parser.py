@@ -10,7 +10,6 @@ class Parser:
         self.id_file = "id.json"
         self.query = {
             "method": "getshows",
-            "type": "show",
             "nextid": 0
         }
         self.shows = dict(self._get_shows())
@@ -29,13 +28,19 @@ class Parser:
         match = re.findall("var hs_showid = \d+", html.text)
         return int(match[0].strip("var hs_showid = "))
 
-    def _get_html(self, showid, limit):
+    def _get_html(self, showid, limit, show_type="show"):
+        if show_type not in ("show", "batch"):
+            raise AssertionError("%s is not a valid value" % show_type)
+
         self.query["showid"] = showid
         self.query["nextid"] = 0
+        self.query["type"] = show_type
         html = ""
+        stop_text = "DONE" if show_type == "show" else "There are no batches for this show yet"
+
         while True:
             response = requests.get(self.api, params=self.query)
-            if response.text == "DONE" or self.query["nextid"] > int(limit / 12):
+            if response.text == stop_text or self.query["nextid"] > int(limit / 12):
                 break
             html += response.text
             self.query["nextid"] += 1
@@ -58,6 +63,8 @@ class Parser:
             }
 
             indexes = [x for x in ["480", "720", "1080"] for _ in range(int(len(links) / 3))]
+            if not indexes:
+                indexes = ["480", "720", "1080"]
             for resolution, link in zip(indexes, links):
                 ret[resolution][link.text] = link["href"]
 
@@ -75,8 +82,13 @@ class Parser:
 
     def get_episodes(self, show: str, limit=1000):
         showid = self._get_show_id(show)
-        html = self._get_html(showid, limit)
-        return list(self._parse_html(html))
+        shows_html = self._get_html(showid, limit)
+        return list(self._parse_html(shows_html))
+
+    def get_batches(self, show: str):
+        showid = self._get_show_id(show)
+        batches_html = self._get_html(showid, 100, show_type="batch")
+        return list(self._parse_html(batches_html))
 
     @staticmethod
     def get_current_shows():
