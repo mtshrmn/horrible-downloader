@@ -47,13 +47,16 @@ def main(d, o):
     path = os.path.expanduser(config.download_dir)
     print(f'Beginning download to {path}')
     for show in reversed(download):
-        subdir = os.path.join(path, show['title'].title())
-        subprocess.call(['webtorrent', show[config.quality]['Magnet'], '-o', subdir])
-        if not d:
-            config.conf['subscriptions'][show['title']] = show['episode'].lstrip('0')
-            with open(os.path.join(config.dir, config.file), 'w') as f:
-                config.conf.write(f)
-            clear()
+        try:
+            subdir = os.path.join(path, show['title'].title())
+            subprocess.call(['webtorrent', show[config.quality]['Magnet'], '-o', subdir])
+            if not d:
+                config.conf['subscriptions'][show['title']] = show['episode'].lstrip('0')
+                with open(os.path.join(config.dir, config.file), 'w') as f:
+                    config.conf.write(f)
+                clear()
+        except KeyboardInterrupt:
+            continue
 
 
 if __name__ == "__main__":
