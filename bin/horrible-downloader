@@ -25,7 +25,6 @@ def main(d, o, e):
     if e:
         for erange in e.split(','):
             r = erange.split('-')
-            print(r)
             if len(r) is 2:
                 custom_episodes.append((int(r[0]), int(r[1])))
             elif len(r) is 1:
