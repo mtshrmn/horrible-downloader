@@ -27,15 +27,18 @@ def main(d, o, e):
             r = erange.split('-')
             print(r)
             if len(r) is 2:
-                custom_episodes.extend(range(int(r[0]), int(r[1]) + 1))
+                custom_episodes.append((int(r[0]), int(r[1])))
             elif len(r) is 1:
-                custom_episodes.append(int(r[0]))
+                custom_episodes.append((int(r[0]), int(r[0])))
 
     download = []
     for show, last_watched in config.subscriptions if not d else [(d, 0)]:
         episodes = p.get_episodes(show)
         if e:
-            new = filter(lambda s: float(s["episode"]) in map(float, custom_episodes), episodes)
+            def in_range(s):
+                return any(map(lambda cep: cep[0] <= float(s["episode"]) <= cep[1], custom_episodes))
+
+            new = filter(in_range, episodes)
         else:
             new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
         download.extend(new)
