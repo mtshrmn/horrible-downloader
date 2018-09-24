@@ -10,7 +10,7 @@ def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def main(d, o):
+def main(d, o, e):
     clear()
     config = ConfigManager()
 
@@ -21,12 +21,28 @@ def main(d, o):
     print('fetching feed...')
     p = Parser()
 
+    custom_episodes = []
+    if e:
+        for erange in e.split(','):
+            r = erange.split('-')
+            print(r)
+            if len(r) is 2:
+                custom_episodes.append((int(r[0]), int(r[1])))
+            elif len(r) is 1:
+                custom_episodes.append((int(r[0]), int(r[0])))
+
     download = []
     for show, last_watched in config.subscriptions if not d else [(d, 0)]:
         batches = p.get_batches(show)
         if not batches:
             episodes = p.get_episodes(show)
-            new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
+            if e:
+                def in_range(s):
+                    return any(map(lambda cep: cep[0] <= float(s["episode"]) <= cep[1], custom_episodes))
+
+                new = filter(in_range, episodes)
+            else:
+                new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
             download.extend(new)
         else:
             download.extend(batches)
@@ -67,5 +83,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='horrible script for downloading anime')
     parser.add_argument('-d', '--download', help="download a specific anime", type=str)
     parser.add_argument('-o', '--output', help="directory to which it will download the files", type=str)
+    parser.add_argument('-e', '--episodes', help="specify specific episodes to download", type=str)
     args = parser.parse_args()
-    main(args.download, args.output)
+    main(args.download, args.output, args.episodes)
