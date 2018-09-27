@@ -92,7 +92,7 @@ class Parser:
     def get_batches(self, show: str):
         showid = self._get_show_id(show)
         batches_html = self._get_html(showid, 100, show_type="batch")
-        return list(self._parse_html(batches_html))[0]
+        return list(self._parse_html(batches_html))
 
     @property
     def current_shows(self):
