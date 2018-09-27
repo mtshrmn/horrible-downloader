@@ -44,7 +44,7 @@ def main(d, o, e):
                 new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
             download.extend(new)
         else:
-            download.extend(batches)
+            download.append(batches)
 
     if not download:
         if d:
