@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-import difflib
+from fuzzywuzzy import process as fuzzy_match
 
 
 class Parser:
@@ -16,7 +16,7 @@ class Parser:
     def _get_show_id(self, show: str) -> int:
         show = show.replace('&amp;', '&')
         try:
-            key = difflib.get_close_matches(show, self.shows)[0]
+            key = fuzzy_match.extractOne(show, self.shows.keys())[0]
         except IndexError:
             return 0
         # assert the user entered a valid show name
