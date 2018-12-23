@@ -83,5 +83,10 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--download', help="download a specific anime", type=str)
     parser.add_argument('-o', '--output', help="directory to which it will download the files", type=str)
     parser.add_argument('-e', '--episodes', help="specify specific episodes to download", type=str)
+    parser.add_argument('-l', '--list', help="display list of available episodes", action="store_true")
     args = parser.parse_args()
+    if args.list:
+        shows = list(Parser().shows.keys())
+        print("\n".join(shows))
+        exit(0)
     main(args.download, args.output, args.episodes)
