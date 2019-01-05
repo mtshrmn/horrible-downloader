@@ -26,9 +26,9 @@ def main(d, o, e):
         for erange in e.split(','):
             r = erange.split('-')
             if len(r) is 2:
-                custom_episodes.append((int(r[0]), int(r[1])))
+                custom_episodes.append((float(r[0]), float(r[1])))
             elif len(r) is 1:
-                custom_episodes.append((int(r[0]), int(r[0])))
+                custom_episodes.append((float(r[0]), float(r[0])))
 
     download = []
     for show, last_watched in config.subscriptions if not d else [(d, 0)]:
