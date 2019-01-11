@@ -10,20 +10,20 @@ def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def main(d, o, e):
+def main(args):
     clear()
     config = ConfigManager()
 
     # change to custom download dir if user has specified
-    if o:
-        config.download_dir = o
+    if args.output:
+        config.download_dir = args.output
 
     print('fetching feed...')
     p = Parser()
 
     custom_episodes = []
-    if e:
-        for erange in e.split(','):
+    if args.episodes:
+        for erange in args.episodes.split(','):
             r = erange.split('-')
             if len(r) is 2:
                 custom_episodes.append((float(r[0]), float(r[1])))
@@ -31,11 +31,11 @@ def main(d, o, e):
                 custom_episodes.append((float(r[0]), float(r[0])))
 
     download = []
-    for show, last_watched in config.subscriptions if not d else [(d, 0)]:
+    for show, last_watched in config.subscriptions if not args.download else [(args.download, 0)]:
         batches = p.get_batches(show)
         if not batches:
             episodes = p.get_episodes(show)
-            if e:
+            if args.episodes:
                 def in_range(s):
                     return any(map(lambda cep: cep[0] <= float(s["episode"]) <= cep[1], custom_episodes))
 
@@ -47,7 +47,7 @@ def main(d, o, e):
             download.append(batches[0])
 
     if not download:
-        if d:
+        if args.download:
             print("Couldn't find specified anime. Exiting")
         else:
             print('No new episodes were found. Exiting ')
@@ -69,7 +69,7 @@ def main(d, o, e):
         try:
             subdir = os.path.join(path, show['title'].title())
             subprocess.call(['webtorrent', show[config.quality]['Magnet'], '-o', subdir])
-            if not d:
+            if not args.download:
                 config.conf['subscriptions'][show['title']] = show['episode'].lstrip('0')
                 with open(os.path.join(config.dir, config.file), 'w') as f:
                     config.conf.write(f)
@@ -89,4 +89,4 @@ if __name__ == "__main__":
         shows = list(Parser().shows.keys())
         print("\n".join(shows))
         exit(0)
-    main(args.download, args.output, args.episodes)
+    main(args)
