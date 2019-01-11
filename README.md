@@ -65,6 +65,7 @@ optional arguments:
 ```
 ##### Episodes & Resolution Formating:
 Those two flags have a special syntax which allows for a better specification interface.
+
 When using **_episodes_** flag, you can use the following:
 
 |character|usage|example|
