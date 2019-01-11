@@ -1,7 +1,14 @@
 from setuptools import setup
+from setuptools.command.install import install
+import subprocess
 
 with open("README.md", 'r') as f:
     long_description = f.read()
+
+class custom_install(install):
+    def run(self):
+        install.run(self)
+        subprocess.call(["npm", "install", "webtorrent-cli", "-g"])
 
 setup(
     name='Horrible-Downloader',
@@ -27,4 +34,5 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ),
+    cmdclass={"install": custom_install}
 )
