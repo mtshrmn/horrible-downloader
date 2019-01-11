@@ -20,6 +20,13 @@ def main(args):
 
     print('fetching feed...')
     p = Parser()
+    qualities = config.quality.split(',') if not args.resolution else args.resolution.split(',')
+
+    # validating qualities object to fit format:
+    for quality in qualities:
+        if quality not in ["480", "720", "1080"]:
+            print("bad resolution specified, aborting...")
+            exit(1)
 
     custom_episodes = []
     if args.episodes:
@@ -55,7 +62,8 @@ def main(args):
 
     print(f'\nFound {len(download)} {"files" if len(download) > 1 else "file"} to download:\n')
     for episode in download:
-        print(f'{episode["title"]} - {episode["episode"]} [{config.quality}p].mkv')
+        for quality in qualities:
+            print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
 
     inp = input('\nwould you like to proceed? [Y/n] ')
     if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
@@ -68,7 +76,8 @@ def main(args):
     for show in reversed(download):
         try:
             subdir = os.path.join(path, show['title'].title())
-            subprocess.call(['webtorrent', show[config.quality]['Magnet'], '-o', subdir])
+            for quality in qualities:
+                subprocess.call(['webtorrent', show[quality]['Magnet'], '-o', subdir])
             if not args.download:
                 config.conf['subscriptions'][show['title']] = show['episode'].lstrip('0')
                 with open(os.path.join(config.dir, config.file), 'w') as f:
@@ -84,6 +93,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--output', help="directory to which it will download the files", type=str)
     parser.add_argument('-e', '--episodes', help="specify specific episodes to download", type=str)
     parser.add_argument('-l', '--list', help="display list of available episodes", action="store_true")
+    parser.add_argument('-r', '--resolution', help="specify resolution quality", type=str)
     args = parser.parse_args()
     if args.list:
         shows = list(Parser().shows.keys())
