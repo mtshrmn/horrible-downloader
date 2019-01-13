@@ -32,8 +32,9 @@ class ConfigManager:
 
         conf.read(specified_conf)
 
-        if not conf['settings']['resolution'] in ('480', '720', '1080'):
-            raise AssertionError
+        for resolution in conf['settings']['resolution'].split(','):
+            if resolution.strip() not in ('480', '720', '1080'):
+                raise AssertionError
         if not isinstance(conf['settings']['download_dir'], str):
             raise AssertionError
         for sub in conf['subscriptions']:
