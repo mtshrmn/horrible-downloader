@@ -18,40 +18,45 @@ def main(args):
     if args.output:
         config.download_dir = args.output
 
-    print('fetching feed...')
-    p = Parser()
-    qualities = config.quality.split(',') if not args.resolution else args.resolution.split(',')
+    try:
+        print('fetching feed...')
+        p = Parser()
+        qualities = config.quality.split(',') if not args.resolution else args.resolution.split(',')
 
-    # validating qualities object to fit format:
-    for quality in qualities:
-        if quality not in ["480", "720", "1080"]:
-            print("bad resolution specified, aborting...")
-            exit(1)
+        # validating qualities object to fit format:
+        for quality in qualities:
+            if quality not in ["480", "720", "1080"]:
+                print("bad resolution specified, aborting...")
+                exit(1)
 
-    custom_episodes = []
-    if args.episodes:
-        for erange in args.episodes.split(','):
-            r = erange.split('-')
-            if len(r) is 2:
-                custom_episodes.append((float(r[0]), float(r[1])))
-            elif len(r) is 1:
-                custom_episodes.append((float(r[0]), float(r[0])))
+        custom_episodes = []
+        if args.episodes:
+            for erange in args.episodes.split(','):
+                r = erange.split('-')
+                if len(r) is 2:
+                    custom_episodes.append((float(r[0]), float(r[1])))
+                elif len(r) is 1:
+                    custom_episodes.append((float(r[0]), float(r[0])))
 
-    download = []
-    for show, last_watched in config.subscriptions if not args.download else [(args.download, 0)]:
-        batches = p.get_batches(show)
-        if not batches:
-            episodes = p.get_episodes(show)
-            if args.episodes:
-                def in_range(s):
-                    return any(map(lambda cep: cep[0] <= float(s["episode"]) <= cep[1], custom_episodes))
+        download = []
+        for show, last_watched in config.subscriptions if not args.download else [(args.download, 0)]:
+            batches = p.get_batches(show)
+            if not batches:
+                episodes = p.get_episodes(show)
+                if args.episodes:
+                    def in_range(s):
+                        return any(map(lambda cep: cep[0] <= float(s["episode"]) <= cep[1], custom_episodes))
 
-                new = filter(in_range, episodes)
+                    new = filter(in_range, episodes)
+                else:
+                    new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
+                download.extend(new)
             else:
-                new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
-            download.extend(new)
-        else:
-            download.append(batches[0])
+                download.append(batches[0])
+
+    except KeyboardInterrupt:
+        print("exiting...")
+        exit(1)
 
     if not download:
         if args.download:
