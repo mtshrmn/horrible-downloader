@@ -8,7 +8,7 @@ with open("README.md", 'r') as f:
 class custom_install(install):
     def run(self):
         install.run(self)
-        subprocess.call(["npm", "install", "webtorrent-cli", "-g"])
+        subprocess.call(["./post_install.sh"])
 
 setup(
     name='Horrible-Downloader',
