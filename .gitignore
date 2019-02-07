@@ -2,3 +2,5 @@ __pycache__
 conf.ini
 idea/
 .idea/
+build/
+Horrible_Downloader.egg-info/
