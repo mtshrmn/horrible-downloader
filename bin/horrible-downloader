@@ -13,12 +13,14 @@ def clear():
 def subscribe_to(show, episode):
     config = ConfigManager()
     p = Parser()
-    title = p.get_episodes(show)[0]["title"].lower()  # we want to get the exact name of the show
-    config.conf["subscriptions"][title] = episode
+    title = p.get_episodes(show)[0]["title"]  # we want to get the exact name of the show
+    if config.conf["subscriptions"][title.lower()]:
+        return False, title
+    config.conf["subscriptions"][title.lower()] = episode
     with open(os.path.join(config.dir, config.file), 'w') as f:
             config.conf.write(f)
 
-    return title
+    return True, title
 
 def main(args):
     clear()
@@ -113,9 +115,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.subscribe:
         episode_number = args.episodes if args.episodes else "0"
-        show = subscribe_to(args.subscribe, episode_number)
-        print(f"Successfully subscribed to: \"{show}\"")
-        print(f"Latest watched episode is - {episode_number}")
+        status, show = subscribe_to(args.subscribe, episode_number)
+        if status:
+            print(f"Successfully subscribed to: \"{show.lower()}\"")
+            print(f"Latest watched episode is - {episode_number}")
+        else:
+            print(f"You're already subscribed to \"{show}\", omitting changes...")
         exit(0)
     if args.list:
         shows = list(Parser().shows.keys())
