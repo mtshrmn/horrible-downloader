@@ -14,7 +14,7 @@ def subscribe_to(show, episode):
     config = ConfigManager()
     p = Parser()
     title = p.get_episodes(show)[0]["title"]  # we want to get the exact name of the show
-    if config.conf["subscriptions"][title.lower()]:
+    if title.lower() in config.conf["subscriptions"]:
         return False, title
     config.conf["subscriptions"][title.lower()] = episode
     with open(os.path.join(config.dir, config.file), 'w') as f:
