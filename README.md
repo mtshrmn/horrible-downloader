@@ -50,7 +50,8 @@ The CLI supports manual download of different anime with various options.
 Full list of flags and options:
 ```
 $ horrible-downloader --help
-usage: horrible-downloader [-h] [-d DOWNLOAD] [-o OUTPUT] [-e EPISODES] [-l] [-r RESOLUTION]
+usage: horrible-downloader [-h] [-d DOWNLOAD] [-o OUTPUT] [-e EPISODES] [-l]
+                           [-r RESOLUTION] [---subscribe SUBSCRIBE]
 
 horrible script for downloading anime
 
@@ -61,6 +62,7 @@ optional arguments:
   -o OUTPUT, --output OUTPUT                 directory to which it will download the files
   -e EPISODES, --episodes EPISODES           manually specify episodes to download
   -r RESOLUTION, --resolution RESOLUTION     specify resolution quality, defaults to config file
+  --subscribe SHOW [-e EPISODE]              add a show to the config file.
 
 ```
 ##### Episodes & Resolution Formating:
