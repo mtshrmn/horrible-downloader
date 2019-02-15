@@ -10,6 +10,16 @@ def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
+def subscribe_to(show, episode):
+    config = ConfigManager()
+    p = Parser()
+    title = p.get_episodes(show)[0]["title"].lower()  # we want to get the exact name of the show
+    config.conf["subscriptions"][title] = episode
+    with open(os.path.join(config.dir, config.file), 'w') as f:
+            config.conf.write(f)
+
+    return title
+
 def main(args):
     clear()
     config = ConfigManager()
@@ -99,7 +109,14 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--episodes', help="specify specific episodes to download", type=str)
     parser.add_argument('-l', '--list', help="display list of available episodes", action="store_true")
     parser.add_argument('-r', '--resolution', help="specify resolution quality", type=str)
+    parser.add_argument('--subscribe', help="add a show to the config file", type=str)
     args = parser.parse_args()
+    if args.subscribe:
+        episode_number = args.episodes if args.episodes else "0"
+        show = subscribe_to(args.subscribe, episode_number)
+        print(f"Successfully subscribed to: \"{show}\"")
+        print(f"Latest watched episode is - {episode_number}")
+        exit(0)
     if args.list:
         shows = list(Parser().shows.keys())
         print("\n".join(shows))
