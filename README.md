@@ -68,17 +68,19 @@ optional arguments:
 ##### Episodes & Resolution Formating:
 Those two flags have a special syntax which allows for a better specification interface.
 
-When using **_episodes_** flag, you can use the following:
+###### When using **_episodes_** flag, you can use the following:
 
 |character|usage|example|
 |---------|-----|-----|
 |,| allows to specify more than one episode or option.|1,6|
 |-| specify a range of episodes, including start and end.| 4-10|
-|>| bigger than, must be last in order.| 7>|
-|<| smaller than, must be first in order.| <10|
-|=|equals, in conjunction with < or >, includes the episode number.| 11>=|
+|~~>~~| ~~bigger than, must be last in order.~~| ~~7>~~|
+|~~<~~| ~~smaller than, must be first in order.~~| ~~<10~~|
+|~~=~~|~~equals, in conjunction with < or >, includes the episode number.~~| ~~11>=~~|
 
-The **_resolution_** flag syntax is simple, just set the resoultions with the comma (,) between.
+**NOTE:** the striked rows are still not implemented. This is planned for the future.
+
+###### The **_resolution_** flag syntax is simple, just set the resoultions with the comma (,) between.
 
 `$  horrible-downloader -r 720,1080`
 
