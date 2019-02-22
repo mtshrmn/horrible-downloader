@@ -52,7 +52,7 @@ def main(args):
 
         download = []
         for show, last_watched in config.subscriptions if not args.download else [(args.download, 0)]:
-            batches = p.get_batches(show)
+            batches = [] if not args.batch else p.get_batches(show)
             if not batches:
                 episodes = p.get_episodes(show)
                 if args.episodes:
@@ -112,6 +112,7 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--list', help="display list of available episodes", action="store_true")
     parser.add_argument('-r', '--resolution', help="specify resolution quality", type=str)
     parser.add_argument('--subscribe', help="add a show to the config file", type=str)
+    parser.add_argument('--batch', help="search for batches as well as regular files", action="store_true")
     args = parser.parse_args()
     if args.subscribe:
         episode_number = args.episodes if args.episodes else "0"
