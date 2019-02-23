@@ -4,7 +4,7 @@ from HorribleDownloader import Parser, ConfigManager
 import os
 import argparse
 import subprocess
-
+from sty import fg
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -31,7 +31,8 @@ def main(args):
         config.download_dir = args.output
 
     try:
-        print('fetching feed...')
+        if args.quiet:
+            print('fetching feed...')
         p = Parser()
         qualities = config.quality.split(',') if not args.resolution else args.resolution.split(',')
 
@@ -52,6 +53,8 @@ def main(args):
 
         download = []
         for show, last_watched in config.subscriptions if not args.download else [(args.download, 0)]:
+            if not args.quiet:
+                print(f"{fg(3)}FETCHING:{fg.rs} {show}", end="", flush=True)
             batches = [] if not args.batch else p.get_batches(show)
             if not batches:
                 episodes = p.get_episodes(show)
@@ -59,32 +62,39 @@ def main(args):
                     def in_range(s):
                         return any(map(lambda cep: cep[0] <= float(s["episode"]) <= cep[1], custom_episodes))
 
-                    new = filter(in_range, episodes)
+                    new = list(filter(in_range, episodes))
                 else:
-                    new = filter(lambda s: float(s["episode"]) > float(last_watched), episodes)
+                    new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
                 download.extend(new)
             else:
                 download.append(batches[0])
 
+            if not args.quiet:
+                dots = "." * (50 - len(str(show)))
+                if new or batches:
+                    print(f"{dots} {fg(10)}FOUND ({str(len(new))}){fg.rs}")
+                else:
+                    print(f"{dots} {fg(8)}NONE{fg.rs}")
+
     except KeyboardInterrupt:
-        print("exiting...")
+        print(f"{fg(1)}\nexiting...{fg.rs}")
         exit(1)
 
     if not download:
         if args.download:
-            print("Couldn't find specified anime. Exiting")
+            print(fg(1) + "Couldn't find specified anime. Exiting" + fg.rs)
         else:
-            print('No new episodes were found. Exiting ')
+            print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
         exit(1)
 
-    print(f'\nFound {len(download)} {"files" if len(download) > 1 else "file"} to download:\n')
+    print(f'{fg(2)}\nFound {len(download)} {"files" if len(download) > 1 else "file"} to download:\n{fg.rs}')
     for episode in download:
         for quality in qualities:
             print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
 
-    inp = input('\nwould you like to proceed? [Y/n] ')
+    inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
     if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
-        print('aborting download\n')
+        print(fg(1) + 'aborting download\n' + fg.rs)
         exit(1)
 
     # let the downloads begin!
@@ -113,6 +123,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--resolution', help="specify resolution quality", type=str)
     parser.add_argument('--subscribe', help="add a show to the config file", type=str)
     parser.add_argument('--batch', help="search for batches as well as regular files", action="store_true")
+    parser.add_argument('-q', '--quiet', help="set quiet mode on", action="store_true")
     args = parser.parse_args()
     if args.subscribe:
         episode_number = args.episodes if args.episodes else "0"
