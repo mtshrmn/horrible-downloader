@@ -51,7 +51,8 @@ Full list of flags and options:
 ```
 $ horrible-downloader --help
 usage: horrible-downloader [-h] [-d DOWNLOAD] [-o OUTPUT] [-e EPISODES] [-l]
-                           [-r RESOLUTION] [---subscribe SUBSCRIBE]
+                           [-r RESOLUTION] [---subscribe SUBSCRIBE] [--batch]
+                           [-q]
 
 horrible script for downloading anime
 
@@ -63,6 +64,8 @@ optional arguments:
   -e EPISODES, --episodes EPISODES           manually specify episodes to download
   -r RESOLUTION, --resolution RESOLUTION     specify resolution quality, defaults to config file
   --subscribe SHOW [-e EPISODE]              add a show to the config file.
+  --batch                                    search for batches as well as regular files
+  -q --quiet                                 set quiet mode on
 
 ```
 ##### Episodes & Resolution Formating:
