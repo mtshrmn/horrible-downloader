@@ -124,6 +124,7 @@ if __name__ == "__main__":
     parser.add_argument('--subscribe', help="add a show to the config file", type=str)
     parser.add_argument('--batch', help="search for batches as well as regular files", action="store_true")
     parser.add_argument('-q', '--quiet', help="set quiet mode on", action="store_true")
+    parser.add_argument('-lc', '--list-current', help="list all currently airing shows", action="store_true")
     args = parser.parse_args()
     if args.subscribe:
         episode_number = args.episodes if args.episodes else "0"
@@ -136,6 +137,10 @@ if __name__ == "__main__":
         exit(0)
     if args.list:
         shows = list(Parser().shows.keys())
+        print("\n".join(shows))
+        exit(0)
+    if args.list_current:
+        shows = list(Parser().current_shows)
         print("\n".join(shows))
         exit(0)
     main(args)
