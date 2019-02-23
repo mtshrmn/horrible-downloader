@@ -25,7 +25,7 @@ setup(
         'beautifulsoup4>=4',
         'requests>=2',
         'lxml>=4',
-        'sty>=1',
+        'sty>=1.0.0b9',
         'fuzzywuzzy>=0.16',
         'python-levenshtein>=0.12'
     ],
