@@ -24,7 +24,10 @@ setup(
     install_requires=[
         'beautifulsoup4>=4',
         'requests>=2',
-        'lxml>=4'
+        'lxml>=4',
+        'sty>=1',
+        'fuzzywuzzy>=0.16',
+        'python-levenshtein>=0.12'
     ],
     scripts=["bin/horrible-downloader"],
     include_package_data=True,
