@@ -59,13 +59,13 @@ horrible script for downloading anime
 optional arguments:
   -h, --help                                 show this help message and exit
   -l, --list                                 display list of available shows
+  -q, --quiet                                set quiet mode on
   -d DOWNLOAD, --download DOWNLOAD           download a specific anime
   -o OUTPUT, --output OUTPUT                 directory to which it will download the files
   -e EPISODES, --episodes EPISODES           manually specify episodes to download
   -r RESOLUTION, --resolution RESOLUTION     specify resolution quality, defaults to config file
   --subscribe SHOW [-e EPISODE]              add a show to the config file.
   --batch                                    search for batches as well as regular files
-  -q --quiet                                 set quiet mode on
 
 ```
 ##### Episodes & Resolution Formating:
