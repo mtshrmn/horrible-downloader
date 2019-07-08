@@ -1,95 +1,137 @@
 #!/usr/bin/env python
 
-from HorribleDownloader import Parser, ConfigManager
 import os
 import argparse
 import subprocess
+from HorribleDownloader import Parser, ConfigManager
 from sty import fg
 
-def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
+def clear(): # function to clear the screan
+    os.system("cls" if os.name == "nt" else "clear")
 
 def subscribe_to(show, episode):
+    """
+    subscribe to a show at and set progress to specified episodes
+    :param show: the search term for the name of the show, it can be an approximation
+    :param episode: the initial episode to set the show. defaults to 0 (as if no episodes were watched).
+    :return: returns a tuple - first element indicates the success status, the second one is the exact name of the show.
+    """
     config = ConfigManager()
-    p = Parser()
-    title = p.get_episodes(show)[0]["title"]  # we want to get the exact name of the show
+    title = Parser().get_episodes(show)[0]["title"]
+
     if title.lower() in config.conf["subscriptions"]:
         return False, title
+
     config.conf["subscriptions"][title.lower()] = episode
-    with open(os.path.join(config.dir, config.file), 'w') as f:
-            config.conf.write(f)
+    with open(os.path.join(config.dir, config.file), "w") as f:
+        config.conf.write(f)
 
     return True, title
 
+def verify_quality(qualities):
+    """
+    checks if quality is in a valid format (480, 720, 1080).
+    :param qualities: array of qualities
+    :return: true if format is right.
+    """
+    for quality in qualities:
+        if quality not in ["480", "720", "1080"]:
+            return False
+    return True
+
+def generate_episode_filter(episodes):
+    """
+    parse the episode specification string to generate a filter function.
+    read the docs for understanding the syntax.
+    :param episodes: the episode specification string
+    :return: filter function for the episodes
+    """
+    # if no episodes where specified - the generated filter should return false.
+    if not episodes:
+        def default_filter():
+            return False
+        return default_filter
+
+    parsed = []
+    for token in episodes.split(","):
+        sub = token.split("-")
+        bounds = float(sub[0]), float(sub[int(len(sub) is 2)])
+        parsed.append(bounds)
+
+    def generated_filter(episode):
+        return any(map(lambda bound: bound[0] <= float(episode) <= bound[1], parsed))
+
+    return generated_filter
+
+def download(episode, qualities, path):
+    """
+    the actual download function
+    :param episode: episode object
+    :param qualities: the specified qualities
+    :param download_dir: absolute path to the directory for downloading the files
+    """
+    subdir = os.path.join(path, episode["title"].title())
+    for quality in qualities:
+        subprocess.call(["webtorrent", episode[quality]["Magnet"], "-o", subdir])
+
 def main(args):
     clear()
-    config = ConfigManager()
-
+    CONFIG = ConfigManager()
+    PARSER = Parser()
     # change to custom download dir if user has specified
     if args.output:
-        config.download_dir = args.output
+        CONFIG.download_dir = args.output
 
-    try:
-        if args.quiet:
-            print('fetching feed...')
-        p = Parser()
-        qualities = config.quality.split(',') if not args.resolution else args.resolution.split(',')
-
-        # validating qualities object to fit format:
-        for quality in qualities:
-            if quality not in ["480", "720", "1080"]:
-                print("bad resolution specified, aborting...")
-                exit(1)
-
-        custom_episodes = []
-        if args.episodes:
-            for erange in args.episodes.split(','):
-                r = erange.split('-')
-                if len(r) is 2:
-                    custom_episodes.append((float(r[0]), float(r[1])))
-                elif len(r) is 1:
-                    custom_episodes.append((float(r[0]), float(r[0])))
-
-        download = []
-        for show, last_watched in config.subscriptions if not args.download else [(args.download, 0)]:
-            if not args.quiet:
-                print(f"{fg(3)}FETCHING:{fg.rs} {show}", end="", flush=True)
-            batches = [] if not args.batch else p.get_batches(show)
-            if not batches:
-                episodes = p.get_episodes(show)
-                if args.episodes:
-                    def in_range(s):
-                        return any(map(lambda cep: cep[0] <= float(s["episode"]) <= cep[1], custom_episodes))
-
-                    new = list(filter(in_range, episodes))
-                else:
-                    new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
-                download.extend(new)
-            else:
-                download.append(batches[0])
-
-            if not args.quiet:
-                dots = "." * (50 - len(str(show)))
-                if new or batches:
-                    print(f"{dots} {fg(10)}FOUND ({str(len(new))}){fg.rs}")
-                else:
-                    print(f"{dots} {fg(8)}NONE{fg.rs}")
-
-    except KeyboardInterrupt:
-        print(f"{fg(1)}\nexiting...{fg.rs}")
+    QUALITIES = (CONFIG.quality if not args.resolution else args.resolution).split(",")
+    # validating qualities object to fit format:
+    if not verify_quality(QUALITIES):
+        print("Bad resolution specified, aborting...")
         exit(1)
 
-    if not download:
-        if args.download:
+    episode_filter = generate_episode_filter(args.episodes)
+
+    downloads = []
+    if args.download: # we want to set the correct title
+        title = Parser().get_episodes(args.download)[0]["title"]
+    # all the variables set, lets start with the iterations:
+    for show, last_watched in [(title, 0)] if not args.download else CONFIG.subscriptions:
+        # print info if not quiet mode
+        if not args.quiet:
+            print(f"{fg(3)}FETCHING:{fg.rs} {show}", end="", flush=True)
+
+        if args.batches:
+            batches = PARSER.get_batches(show)
+            downloads.append(batches[0])
+        else:
+            episodes = PARSER.get_episodes(show)
+            if args.episodes:
+                new = list(filter(episode_filter, episodes))
+            else:
+                new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
+
+            downloads.extend(new)
+
+        #print the dots...
+        if not args.quiet:
+            dots = "." * (50 - len(str(show)))
+            if new or batches:
+                print(f"{dots} {fg(10)}FOUND ({str(len(new))}){fg.rs}")
+            else:
+                print(f"{dots} {fg(8)}NONE{fg.rs}")
+
+    # after we iterated on all of the shows we have a list of stuff to download.
+    # but first we must check the list if it contains data:
+    if not downloads:
+        if args.download: # we want to display a different message in each case.
             print(fg(1) + "Couldn't find specified anime. Exiting" + fg.rs)
         else:
             print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
-        exit(1)
+        exit(1) # arguably should be exit code 0
 
-    print(f'{fg(2)}\nFound {len(download)} {"files" if len(download) > 1 else "file"} to download:\n{fg.rs}')
-    for episode in download:
-        for quality in qualities:
+    # summerizing info about the download
+    print(f'{fg(2)}\nFound {len(downloads)} {"files" if len(downloads) > 1 else "file"} to download:\n{fg.rs}')
+    for episode in downloads:
+        for quality in QUALITIES:
             print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
 
     inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
@@ -97,21 +139,15 @@ def main(args):
         print(fg(1) + 'aborting download\n' + fg.rs)
         exit(1)
 
-    # let the downloads begin!
-    path = os.path.expanduser(config.download_dir)
-    print(f'Beginning download to {path}')
-    for show in reversed(download):
-        try:
-            subdir = os.path.join(path, show['title'].title())
-            for quality in qualities:
-                subprocess.call(['webtorrent', show[quality]['Magnet'], '-o', subdir])
-            if not args.download:
-                config.conf['subscriptions'][show['title']] = show['episode'].lstrip('0')
-                with open(os.path.join(config.dir, config.file), 'w') as f:
-                    config.conf.write(f)
-                clear()
-        except KeyboardInterrupt:
-            continue
+    #l et the downloads begin!
+    abs_path = os.path.expanduser(CONFIG.download_dir)
+    for episode_obj in reversed(downloads):
+        download(episode_obj, QUALITIES, abs_path)
+
+        if not args.download:
+            CONFIG.conf["subscriptions"][show["title"]] = show["episode"].lstrip("0")
+            with open(os.path.join(CONFIG.dir, CONFIG.file), "w") as f:
+                CONFIG.conf.write(f)
 
 
 if __name__ == "__main__":
@@ -126,21 +162,26 @@ if __name__ == "__main__":
     parser.add_argument('-q', '--quiet', help="set quiet mode on", action="store_true")
     parser.add_argument('-lc', '--list-current', help="list all currently airing shows", action="store_true")
     args = parser.parse_args()
+
     if args.subscribe:
-        episode_number = args.episodes if args.episodes else "0"
+        episode_number = args.episode if args.episode else "0"
         status, show = subscribe_to(args.subscribe, episode_number)
+
         if status:
             print(f"Successfully subscribed to: \"{show.lower()}\"")
             print(f"Latest watched episode is - {episode_number}")
         else:
             print(f"You're already subscribed to \"{show}\", omitting changes...")
         exit(0)
+
     if args.list:
         shows = list(Parser().shows.keys())
         print("\n".join(shows))
         exit(0)
+
     if args.list_current:
         shows = list(Parser().current_shows)
         print("\n".join(shows))
         exit(0)
+
     main(args)
