@@ -165,7 +165,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.subscribe:
-        episode_number = args.episode if args.episode else "0"
+        episode_number = args.episodes if args.episodes else "0"
         status, show = subscribe_to(args.subscribe, episode_number)
 
         if status:
