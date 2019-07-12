@@ -59,7 +59,7 @@ def generate_episode_filter(episodes):
         parsed.append(bounds)
 
     def generated_filter(episode):
-        return any(map(lambda bound: bound[0] <= float(episode) <= bound[1], parsed))
+        return any(map(lambda bound: bound[0] <= float(episode["episode"]) <= bound[1], parsed))
 
     return generated_filter
 
@@ -88,24 +88,25 @@ def main(args):
         print("Bad resolution specified, aborting...")
         exit(1)
 
-    episode_filter = generate_episode_filter(args.episodes)
-
     downloads = []
     if args.download: # we want to set the correct title
         title = Parser().get_episodes(args.download)[0]["title"]
     # all the variables set, lets start with the iterations:
-    for show, last_watched in [(title, 0)] if not args.download else CONFIG.subscriptions:
+    for show, last_watched in [(title, 0)] if args.download else CONFIG.subscriptions:
+        # default values for
+        new = []
+
         # print info if not quiet mode
         if not args.quiet:
             print(f"{fg(3)}FETCHING:{fg.rs} {show}", end="", flush=True)
 
-        if args.batches:
-            batches = PARSER.get_batches(show)
-            downloads.append(batches[0])
+        if args.batch:
+            new = PARSER.get_batches(show)
+            downloads.append(new[0])
         else:
             episodes = PARSER.get_episodes(show)
             if args.episodes:
-                new = list(filter(episode_filter, episodes))
+                new = list(filter(generate_episode_filter(args.episodes), episodes))
             else:
                 new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
 
@@ -114,7 +115,7 @@ def main(args):
         #print the dots...
         if not args.quiet:
             dots = "." * (50 - len(str(show)))
-            if new or batches:
+            if new:
                 print(f"{dots} {fg(10)}FOUND ({str(len(new))}){fg.rs}")
             else:
                 print(f"{dots} {fg(8)}NONE{fg.rs}")
@@ -145,7 +146,7 @@ def main(args):
         download(episode_obj, QUALITIES, abs_path)
 
         if not args.download:
-            CONFIG.conf["subscriptions"][show["title"]] = show["episode"].lstrip("0")
+            CONFIG.conf["subscriptions"][episode_obj["title"].lower()] = episode_obj["episode"].lstrip("0")
             with open(os.path.join(CONFIG.dir, CONFIG.file), "w") as f:
                 CONFIG.conf.write(f)
 
