@@ -19,7 +19,9 @@ The dependency is automatically downloaded with the installation script, but for
 
 **NOTE:** _WebTorrent_ is a NodeJS application, which means you must have Node installed.
 
-## Usage
+## Documentation
+
+#### Usage
 example usage of the API inside of Python:
 ```python
 from HorribleDownloader import Parser, ConfigManager
@@ -34,6 +36,52 @@ for show, last_watched in config.subscriptions:
     download.extend(new)
 
 ```
+
+### Using the Parser
+for us to do simple interactions with the API we must first initiate a parser object using the `HorribleDownloader.Parser()`.
+
+The parser will allow us to fetch data from [horriblesubs](horriblesubs.info). here are the methods and properties:
+
+- **shows** - List all available shows. equivalent to https://horriblesubs.info/shows/.
+- **current_shows** - List all currently airing shows. equivalent to https://horriblesubs.info/current-season/.
+- **get_episodes(show: str, limit=1000)** - Returns a list of episodes from the specified show. By default will return the first 1000 episodes (of course, most shows don't even reach the 100th episode).
+- **get_batches(show: str)** - Returns the batches of the show (if it exists).
+
+#### Episode Object
+
+When referring to an episode, the actual representation of it is an object of the following structure:
+```python
+{
+  "title": "the title of the show",
+  "episode": "episode number", # represented with a float.
+  "480": { # all of the files are in 480p resolution
+    "Magnet" "link to magnet",
+    "Torrent": "link to the .torrent file",
+    "XDCC": "XDCC query", # https://xdcc.horriblesubs.info/
+    "Uploaded.net": "uploaded.net link to .mkv",
+    "FileUpload": "fileupload link to .mkv",
+    "Uplod": "uplod link to .mkv"
+  },
+  "720": { # exactly the same as the 480, but with 720p resolution
+    "Magnet" "link to magnet",
+    "Torrent": "link to the .torrent file",
+    "XDCC": "XDCC query",
+    "Uploaded.net": "uploaded.net link to .mkv",
+    "FileUpload": "fileupload link to .mkv",
+    "Uplod": "uplod link to .mkv"
+  },
+  "1080": { # 1080p resolution
+    "Magnet" "link to magnet",
+    "Torrent": "link to the .torrent file",
+    "XDCC": "XDCC query",
+    "Uploaded.net": "uploaded.net link to .mkv",
+    "FileUpload": "fileupload link to .mkv",
+    "Uplod": "uplod link to .mkv"
+  }
+}
+```
+
+---
 
 ## Horrible-Subs CLI
 A powerful tool for managing and downloading anime in an automatic manner. To run it, simply call `horrible-downloader`.
