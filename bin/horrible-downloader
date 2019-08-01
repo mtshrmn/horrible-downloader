@@ -5,6 +5,8 @@ import argparse
 import subprocess
 from HorribleDownloader import Parser, ConfigManager
 from sty import fg
+import multiprocessing
+from queue import Empty
 
 def clear(): # function to clear the screan
     os.system("cls" if os.name == "nt" else "clear")
@@ -74,6 +76,35 @@ def download(episode, qualities, path):
     for quality in qualities:
         subprocess.call(["webtorrent", episode[quality]["Magnet"], "-o", subdir])
 
+def fetch_episodes(parser, show, last_watched, queue):
+    # default values for
+    new = []
+
+    # print info if not quiet mode
+    if not args.quiet:
+        print(f"{fg(3)}FETCHING:{fg.rs} {show}", end="", flush=True)
+
+    if args.batch:
+        new = parser.get_batches(show)
+        queue.put(new[0])
+    else:
+        episodes = parser.get_episodes(show)
+        if args.episodes:
+            new = list(filter(generate_episode_filter(args.episodes), episodes))
+        else:
+            new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
+
+        for e in new:
+            queue.put(e)
+
+    #print the dots...
+    if not args.quiet:
+        dots = "." * (50 - len(str(show)))
+        if new:
+            print(f"{dots} {fg(10)}FOUND ({str(len(new))}){fg.rs}")
+        else:
+            print(f"{dots} {fg(8)}NONE{fg.rs}")
+
 def main(args):
     clear()
     CONFIG = ConfigManager()
@@ -91,34 +122,29 @@ def main(args):
     downloads = []
     if args.download: # we want to set the correct title
         title = Parser().get_episodes(args.download)[0]["title"]
+
+    downloads = multiprocessing.Queue()
+    procs = []
+
     # all the variables set, lets start with the iterations:
     for show, last_watched in [(title, 0)] if args.download else CONFIG.subscriptions:
-        # default values for
-        new = []
+        proc = multiprocessing.Process(target=fetch_episodes, args=(PARSER, show, last_watched, downloads))
+        proc.start()
+        procs.append(proc)
 
-        # print info if not quiet mode
-        if not args.quiet:
-            print(f"{fg(3)}FETCHING:{fg.rs} {show}", end="", flush=True)
+    for proc in procs:
+        proc.join()
 
-        if args.batch:
-            new = PARSER.get_batches(show)
-            downloads.append(new[0])
-        else:
-            episodes = PARSER.get_episodes(show)
-            if args.episodes:
-                new = list(filter(generate_episode_filter(args.episodes), episodes))
-            else:
-                new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
-
-            downloads.extend(new)
-
-        #print the dots...
-        if not args.quiet:
-            dots = "." * (50 - len(str(show)))
-            if new:
-                print(f"{dots} {fg(10)}FOUND ({str(len(new))}){fg.rs}")
-            else:
-                print(f"{dots} {fg(8)}NONE{fg.rs}")
+    # convert the queue to a regular old list
+    downloads_list = []
+    while True:
+        try:
+            download = downloads.get_nowait()
+            print(download)
+            downloads_list.append(download)
+        except Empty:
+            break
+    downloads = downloads_list
 
     # after we iterated on all of the shows we have a list of stuff to download.
     # but first we must check the list if it contains data:
