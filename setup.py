@@ -16,9 +16,6 @@ class custom_install(install):
             subprocess.call(["./post_install.sh"])
 
 if os.name == "nt":
-    print(os.listdir(os.path.abspath("bin/")))
-    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    print(os.path.abspath("bin/"))
     try:
         os.rename(os.path.abspath("bin/horrible-downloader"), os.path.abspath("bin/horrible-downloader.py"))
     except FileNotFoundError:
