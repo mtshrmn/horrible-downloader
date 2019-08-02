@@ -1,3 +1,4 @@
+import os
 from setuptools import setup
 from setuptools.command.install import install
 import subprocess
@@ -8,7 +9,11 @@ with open("README.md", 'r') as f:
 class custom_install(install):
     def run(self):
         install.run(self)
-        subprocess.call(["./post_install.sh"])
+        if os.name == "nt":
+            #TODO: call post install for windows
+            pass
+        else:
+            subprocess.call(["./post_install.sh"])
 
 setup(
     name='Horrible-Downloader',
@@ -29,7 +34,7 @@ setup(
         'fuzzywuzzy>=0.16',
         'python-levenshtein>=0.12'
     ],
-    scripts=["bin/horrible-downloader"],
+    scripts=["bin/horrible-downloader.py"] if os.name == "nt" else ["bin/horrible-downloader"],
     include_package_data=True,
     zip_safe=False,
     classifiers=(
