@@ -7,10 +7,21 @@
 *Horrible Downloader* is a Python wrapper around the [HorribleSubs](https://horriblesubs.info/) API. It comes with a powerful set of extra features, which allow users to automatically download new episodes and batches of existing shows. The module tracks the downloaded files and allows you to continue from where you left.
 
 ## Installation
+
+##### Linux:
 ```sh
 $ git clone https://github.com/jelomite/horrible-downloader.git
 $ cd horrible-downloader
 $ pip install .
+```
+
+##### Windows:
+```sh
+> git clone https://github.com/jelomite/horrible-downloader.git
+> cd horrible-downloader
+> pip install .
+> set PathExt="%PathExt%;.PY" # add PY extension to PATHEXT
+> npm install webtorrent-cli -g
 ```
 
 ## Dependencies
