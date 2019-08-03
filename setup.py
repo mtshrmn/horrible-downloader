@@ -13,7 +13,7 @@ class custom_install(install):
             #TODO: call post install for windows
             pass
         else:
-            subprocess.call(["./post_install.sh"], shell=True)
+            subprocess.call(["./post_install.sh"])
 
 if os.name == "nt":
     try:
