@@ -47,3 +47,8 @@ class MockTest(unittest.TestCase):
                 'Test 3': 'test-3',
                 'Test 4': 'test-4'
                 })
+
+    def test_get_episodes(self):
+        with HTTMock(api_mock):
+            episodes = self.parser.get_episodes("enen no shouboutai", limit=4)
+            self.assertEqual(len(episodes), 4)
