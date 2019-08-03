@@ -2,6 +2,7 @@ from httmock import urlmatch, HTTMock
 import unittest
 from HorribleDownloader import Parser
 import requests
+from urllib.parse import parse_qs
 
 @urlmatch(scheme="https", netloc="horriblesubs.info", path="/current-season/")
 def current_season_mock(url, request):
@@ -14,10 +15,18 @@ def shows_mock(url, request):
         return html.read()
 
 @urlmatch(scheme="https", netloc="horriblesubs.info", path="/api.php")
-# TODO: understand how the fuck to create a mock api.
 def api_mock(url, request):
-    # TODO: write a response
-    pass
+    query = parse_qs(url.query)
+    if query["type"][0] == "show":
+        with open("html-mocks/api-show.html", "r") as html:
+            # Enen no Shouboutai episodes 1-4
+            # showID 1274
+            return html.read()
+    elif query["type"][0] == "batch":
+        with open("html-mocks/api-batch.html", "r") as html:
+            # One Punch Man batch 1-12
+            # return batch 351
+            return html.read()
 
 
 class MockTest(unittest.TestCase):
