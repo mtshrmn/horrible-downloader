@@ -1,4 +1,4 @@
-# Horrible Downloader    [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4a13ba5715f94427998e63968ea710d7)](https://app.codacy.com/app/Jelomite/horrible-downloader?utm_source=github.com&utm_medium=referral&utm_content=Jelomite/horrible-downloader&utm_campaign=Badge_Grade_Settings)
+# Horrible Downloader    [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4a13ba5715f94427998e63968ea710d7)](https://app.codacy.com/app/Jelomite/horrible-downloader?utm_source=github.com&utm_medium=referral&utm_content=Jelomite/horrible-downloader&utm_campaign=Badge_Grade_Settings)   [![Build Status](https://travis-ci.org/Jelomite/horrible-downloader.svg?branch=master)](https://travis-ci.org/Jelomite/horrible-downloader)
 
 ![horrible subs banner](http://horriblesubs.info/images/b/ccs_banner.jpg)
 
