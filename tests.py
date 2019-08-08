@@ -59,5 +59,5 @@ class MockTest(unittest.TestCase):
 
     def test_show_id(self):
         with HTTMock(showid_mock):
-            id = self.parser._get_show_id("doesn't matter")
-            self.assertTrue(id, 123456789)
+            showid = self.parser._get_show_id("doesn't matter")
+            self.assertTrue(showid, 123456789)
