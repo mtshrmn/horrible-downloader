@@ -1,7 +1,6 @@
 from httmock import urlmatch, HTTMock
 import unittest
 from HorribleDownloader import Parser
-import requests
 from urllib.parse import parse_qs
 
 @urlmatch(scheme="https", netloc="horriblesubs.info", path="/current-season/")
