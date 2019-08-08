@@ -28,6 +28,9 @@ def api_mock(url, request):
             # return batch 351
             return html.read()
 
+@urlmatch(scheme="https", netloc="horriblesubs.info", path="/api.php")
+def showid_mock(url, request):
+    return "var hs_showid = 123456789"
 
 class MockTest(unittest.TestCase):
     def setUp(self):
@@ -50,5 +53,12 @@ class MockTest(unittest.TestCase):
 
     def test_get_episodes(self):
         with HTTMock(api_mock):
-            episodes = self.parser.get_episodes("enen no shouboutai", limit=4)
+            episodes = self.parser.get_episodes("test", limit=4)
             self.assertEqual(len(episodes), 4)
+            batch = self.parser.get_batches("test")
+            self.assertEqual(batch[0]["title"].lower(), "one-punch man")
+
+    def test_show_id(self):
+        with HTTMock(showid_mock):
+            id = self.parser._get_show_id("doesn't matter")
+            self.assertTrue(id, 123456789)
