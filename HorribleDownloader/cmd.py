@@ -72,7 +72,7 @@ def download(episode, qualities, path):
     """
     subdir = os.path.join(path, episode["title"].title())
     for quality in qualities:
-        subprocess.call(["webtorrent", episode[quality]["Magnet"], "-o", subdir], shell=True)
+        subprocess.call(["webtorrent",  "-o", subdir, "download", episode[quality]["Magnet"]], shell=True)
 
 def main(args):
     clear()
@@ -150,8 +150,7 @@ def main(args):
             with open(os.path.join(CONFIG.dir, CONFIG.file), "w") as f:
                 CONFIG.conf.write(f)
 
-
-if __name__ == "__main__":
+def cli():
     parser = argparse.ArgumentParser(description='horrible script for downloading anime')
     parser.add_argument('-d', '--download', help="download a specific anime", type=str)
     parser.add_argument('-o', '--output', help="directory to which it will download the files", type=str)
@@ -186,3 +185,7 @@ if __name__ == "__main__":
         exit(0)
 
     main(args)
+
+
+if __name__ == "__main__":
+    cli()

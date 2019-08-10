@@ -1,4 +1,3 @@
-import os
 from setuptools import setup
 from setuptools.command.install import install
 import subprocess
@@ -8,22 +7,21 @@ with open("README.md", 'r') as f:
 
 class custom_install(install):
     def run(self):
-        install.run(self)
-        if os.name == "nt":
-            #TODO: call post install for windows
-            pass
-        else:
-            subprocess.call(["./post_install.sh"])
+        # check if webtorrent is installed
+        try:
+            subprocess.call(["webtorrent", "-v"], shell=True)
+        except subprocess.CalledProcessError:
+            try:
+                subprocess.call(["npm", "install", "webtorrent-cli", "-g"], shell=True)
+            except subprocess.CalledProcessError:
+                pass
 
-if os.name == "nt":
-    try:
-        os.rename(os.path.abspath("bin/horrible-downloader"), os.path.abspath("bin/horrible-downloader.py"))
-    except FileNotFoundError:
-        pass
+        finally:
+            install.run(self)
 
 setup(
     name='Horrible-Downloader',
-    version='0.1.6',
+    version='0.1.7',
     packages=['HorribleDownloader'],
     url='https://github.com/Jelomite/horrible-downloader',
     license='MIT',
@@ -40,7 +38,9 @@ setup(
         'fuzzywuzzy>=0.16',
         'python-levenshtein>=0.12'
     ],
-    scripts=["bin/horrible-downloader.py"] if os.name == "nt" else ["bin/horrible-downloader"],
+    entry_points={
+        "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:cli"]
+    },
     include_package_data=True,
     zip_safe=False,
     classifiers=(
