@@ -72,7 +72,7 @@ def download(episode, qualities, path):
     """
     subdir = os.path.join(path, episode["title"].title())
     for quality in qualities:
-        subprocess.call(["webtorrent", episode[quality]["Magnet"], "-o", subdir], shell=True)
+        subprocess.call(["webtorrent",  "-o", subdir, "download", episode[quality]["Magnet"]], shell=True)
 
 def main(args):
     clear()
