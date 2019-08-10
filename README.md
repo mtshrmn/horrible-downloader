@@ -8,20 +8,10 @@
 
 ## Installation
 
-##### Linux:
-```sh
-$ git clone https://github.com/jelomite/horrible-downloader.git
-$ cd horrible-downloader
-$ pip install .
-```
-
-##### Windows:
 ```sh
 > git clone https://github.com/jelomite/horrible-downloader.git
 > cd horrible-downloader
 > pip install .
-> set PathExt="%PathExt%;.PY" # add PY extension to PATHEXT
-> npm install webtorrent-cli -g
 ```
 
 ## Dependencies
