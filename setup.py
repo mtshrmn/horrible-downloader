@@ -1,4 +1,3 @@
-import os
 from setuptools import setup
 from setuptools.command.install import install
 import subprocess
@@ -10,8 +9,7 @@ class custom_install(install):
     def run(self):
         # check if webtorrent is installed
         try:
-            webtorrent_version = subprocess.check_output(["webtorrent", "-v"], shell=True)
-
+            subprocess.call(["webtorrent", "-v"], shell=True)
         except subprocess.CalledProcessError:
             try:
                 subprocess.call(["npm", "install", "webtorrent-cli", "-g"], shell=True)
