@@ -6,6 +6,21 @@ import subprocess
 with open("README.md", 'r') as f:
     long_description = f.read()
 
+class custom_install(install):
+    def run(self):
+        # check if webtorrent is installed
+        try:
+            webtorrent_version = subprocess.check_output(["webtorrent", "-v"], shell=True)
+
+        except subprocess.CalledProcessError:
+            try:
+                subprocess.call(["npm", "install", "webtorrent-cli", "-g"], shell=True)
+            except subprocess.CalledProcessError:
+                pass
+
+        finally:
+            install.run(self)
+
 setup(
     name='Horrible-Downloader',
     version='0.1.6',
