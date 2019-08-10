@@ -6,21 +6,6 @@ import subprocess
 with open("README.md", 'r') as f:
     long_description = f.read()
 
-class custom_install(install):
-    def run(self):
-        install.run(self)
-        if os.name == "nt":
-            #TODO: call post install for windows
-            pass
-        else:
-            subprocess.call(["./post_install.sh"])
-
-if os.name == "nt":
-    try:
-        os.rename(os.path.abspath("bin/horrible-downloader"), os.path.abspath("bin/horrible-downloader.py"))
-    except FileNotFoundError:
-        pass
-
 setup(
     name='Horrible-Downloader',
     version='0.1.6',
@@ -40,7 +25,9 @@ setup(
         'fuzzywuzzy>=0.16',
         'python-levenshtein>=0.12'
     ],
-    scripts=["bin/horrible-downloader.py"] if os.name == "nt" else ["bin/horrible-downloader"],
+    entry_points={
+        "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:cli"]
+    },
     include_package_data=True,
     zip_safe=False,
     classifiers=(
