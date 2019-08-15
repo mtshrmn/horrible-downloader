@@ -7,3 +7,4 @@ urllib3>=1.23
 fuzzywuzzy>=0.16
 python-levenshtein>=0.12
 sty>=1.0.0b9
+httmock>=1.0
