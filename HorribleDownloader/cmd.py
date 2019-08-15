@@ -146,6 +146,14 @@ def main(args):
     for proc in procs:
         proc.join()
 
+    # convert downloads dict to a flat list
+    temp_downloads_list = []
+    for show in downloads.keys():
+        if downloads[show]:
+            temp_downloads_list.extend(downloads[show])
+
+    downloads = temp_downloads_list
+    
     # after we iterated on all of the shows we have a list of stuff to download.
     # but first we must check the list if it contains data:
     if not downloads:
@@ -154,14 +162,6 @@ def main(args):
         else:
             print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
         exit(1) # arguably should be exit code 0
-
-    # convert downloads dict to a flat list
-    temp_downloads_list = []
-    for show in downloads.keys():
-        if downloads[show]:
-            temp_downloads_list.extend(downloads[show])
-
-    downloads = temp_downloads_list
 
     # summerizing info about the download
     print(f'{fg(2)}\nFound {len(downloads)} {"files" if len(downloads) > 1 else "file"} to download:\n{fg.rs}')
