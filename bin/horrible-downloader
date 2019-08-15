@@ -6,7 +6,6 @@ import subprocess
 from HorribleDownloader import Parser, ConfigManager
 from sty import fg
 import multiprocessing
-from queue import Empty
 
 def clear(): # function to clear the screan
     os.system("cls" if os.name == "nt" else "clear")
@@ -76,34 +75,43 @@ def download(episode, qualities, path):
     for quality in qualities:
         subprocess.call(["webtorrent", episode[quality]["Magnet"], "-o", subdir])
 
-def fetch_episodes(parser, show, last_watched, queue):
+def fetch_episodes(parser, show, last_watched, shared_data, global_args):
     # default values for
     new = []
-
+    shared_data[show] = []
     # print info if not quiet mode
-    if not args.quiet:
-        print(f"{fg(3)}FETCHING:{fg.rs} {show}", end="", flush=True)
+    if not global_args.quiet:
+        titles = shared_data.keys()
+        clear()
+        for title in titles:
+            print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
-    if args.batch:
+    if global_args.batch:
         new = parser.get_batches(show)
-        queue.put(new[0])
+        shared_data[show] = new[0]
     else:
         episodes = parser.get_episodes(show)
-        if args.episodes:
-            new = list(filter(generate_episode_filter(args.episodes), episodes))
+        if global_args.episodes:
+            new = list(filter(generate_episode_filter(global_args.episodes), episodes))
         else:
             new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
 
-        for e in new:
-            queue.put(e)
+        shared_data[show] = new if new else None
 
-    #print the dots...
-    if not args.quiet:
-        dots = "." * (50 - len(str(show)))
-        if new:
-            print(f"{dots} {fg(10)}FOUND ({str(len(new))}){fg.rs}")
-        else:
-            print(f"{dots} {fg(8)}NONE{fg.rs}")
+    # print the dots...
+    if not global_args.quiet:
+
+        titles = shared_data.keys()
+        clear()
+        for title in titles:
+            dots = "." * (50 - len(str(title)))
+            if shared_data[title]:
+                print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}FOUND ({str(len(shared_data[title]))}){fg.rs}")
+            else:
+                if shared_data[title] is None:
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+                else:
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
 def main(args):
     clear()
@@ -123,28 +131,20 @@ def main(args):
     if args.download: # we want to set the correct title
         title = Parser().get_episodes(args.download)[0]["title"]
 
-    downloads = multiprocessing.Queue()
+    downloads = multiprocessing.Manager().dict()
     procs = []
 
     # all the variables set, lets start with the iterations:
     for show, last_watched in [(title, 0)] if args.download else CONFIG.subscriptions:
-        proc = multiprocessing.Process(target=fetch_episodes, args=(PARSER, show, last_watched, downloads))
+        proc = multiprocessing.Process(
+        target=fetch_episodes,
+        args=(PARSER, show, last_watched, downloads, args))
+
         proc.start()
         procs.append(proc)
 
     for proc in procs:
         proc.join()
-
-    # convert the queue to a regular old list
-    downloads_list = []
-    while True:
-        try:
-            download = downloads.get_nowait()
-            print(download)
-            downloads_list.append(download)
-        except Empty:
-            break
-    downloads = downloads_list
 
     # after we iterated on all of the shows we have a list of stuff to download.
     # but first we must check the list if it contains data:
@@ -154,6 +154,14 @@ def main(args):
         else:
             print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
         exit(1) # arguably should be exit code 0
+
+    # convert downloads dict to a flat list
+    temp_downloads_list = []
+    for show in downloads.keys():
+        if downloads[show]:
+            temp_downloads_list.extend(downloads[show])
+
+    downloads = temp_downloads_list
 
     # summerizing info about the download
     print(f'{fg(2)}\nFound {len(downloads)} {"files" if len(downloads) > 1 else "file"} to download:\n{fg.rs}')
