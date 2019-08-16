@@ -73,7 +73,7 @@ def download(episode, qualities, path):
     """
     subdir = os.path.join(path, episode["title"].title())
     for quality in qualities:
-        subprocess.call(["webtorrent",  "-o", subdir, "download", episode[quality]["Magnet"]], shell=True)
+        subprocess.call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"", shell=True)
 
 def fetch_episodes(parser, show, last_watched, shared_data, global_args):
     # default values for
