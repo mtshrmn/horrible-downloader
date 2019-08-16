@@ -8,16 +8,9 @@ with open("README.md", 'r') as f:
 class custom_install(install):
     def run(self):
         # check if webtorrent is installed
-        try:
-            subprocess.call(["webtorrent", "-v"], shell=True)
-        except subprocess.CalledProcessError:
-            try:
-                subprocess.call(["npm", "install", "webtorrent-cli", "-g"], shell=True)
-            except subprocess.CalledProcessError:
-                pass
-
-        finally:
-            install.run(self)
+        if subprocess.call(["webtorrent", "-v"], shell=True):
+            subprocess.call("npm install webtorrent-cli -g", shell=True)
+        install.run(self)
 
 setup(
     name='Horrible-Downloader',
