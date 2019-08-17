@@ -1,7 +1,8 @@
 from httmock import urlmatch, HTTMock
 import unittest
-from HorribleDownloader import Parser
+from HorribleDownloader import Parser, cmd
 from urllib.parse import parse_qs
+import itertools
 
 @urlmatch(scheme="https", netloc="horriblesubs.info", path="/current-season/")
 def current_season_mock(url, request):
@@ -61,3 +62,19 @@ class MockTest(unittest.TestCase):
         with HTTMock(showid_mock):
             showid = self.parser._get_show_id("doesn't matter")
             self.assertTrue(showid, 123456789)
+
+
+class CMDTest(unittest.TestCase):
+    def test_quality_verification(self):
+        for r in range(1, 3):
+            for qualities in itertools.combinations(["480", "720", "1080"], r):
+                self.assertTrue(cmd.verify_quality(qualities))
+
+    def test_episode_filter_generation(self):
+        queries =  ["1,2,3,4", "1,3,5-7", "=<3,9>"]
+        episodes = [[1, 3, 4.5, 5], [0.5, 1, 2, 5, 6], [0, 0.1, 0.5, 2.9, 3, 5, 9, 10.5]]
+        answers =  [[1, 3], [1, 5, 6], [0, 0.1, 0.5, 2.9, 3, 10.5]]
+        for q, e, a in zip(queries, episodes, answers):
+            f = cmd.generate_episode_filter(q)
+            filtered = list(filter(f, e))
+            self.assertEqual(filtered, a)

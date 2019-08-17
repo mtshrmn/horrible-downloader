@@ -126,11 +126,9 @@ Those two flags have a special syntax which allows for a better specification in
 |---------|-----|-----|
 |,| allows to specify more than one episode or option.|1,6|
 |-| specify a range of episodes, including start and end.| 4-10|
-|~~>~~| ~~bigger than, must be last in order.~~| ~~7>~~|
-|~~<~~| ~~smaller than, must be first in order.~~| ~~<10~~|
-|~~=~~|~~equals, in conjunction with < or >, includes the episode number.~~| ~~11>=~~|
-
-**NOTE:** the striked rows are still not implemented. This is planned for the future.
+|>| bigger than, must be last in order.| 7>|
+|<| smaller than, must be first in order.| <10|
+|=|equals, in conjunction with < or >, includes the episode number.| 11>=|
 
 ###### The **_resolution_** flag syntax is simple, just set the resoultions with the comma (,) between.
 

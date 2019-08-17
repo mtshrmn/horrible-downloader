@@ -6,6 +6,7 @@ import subprocess
 from HorribleDownloader import Parser, ConfigManager
 from sty import fg
 import multiprocessing
+from functools import partial
 
 def clear(): # function to clear the screan
     os.system("cls" if os.name == "nt" else "clear")
@@ -53,14 +54,36 @@ def generate_episode_filter(episodes):
             return False
         return default_filter
 
-    parsed = []
+    tests = []
     for token in episodes.split(","):
-        sub = token.split("-")
-        bounds = float(sub[0]), float(sub[int(len(sub) is 2)])
-        parsed.append(bounds)
+        # we have multiple options:
+        # N, N1-N2, =<N, <N, N>=, N>
+        # each of those options adds a test to a list.
+        # if one tests passes -> we keep the episode.
+        if token.replace('.', '', 1).isdigit():
+            tests.append(partial(lambda t, ep: ep == t, float(token)))
 
-    def generated_filter(episode):
-        return any(map(lambda bound: bound[0] <= float(episode["episode"]) <= bound[1], parsed))
+        elif "-" in token:
+            numbers = token.split("-")
+            tests.append(partial(lambda n1, n2, ep: float(n1) <= ep <= float(n2), *numbers))
+
+        elif token.startswith("=<"):
+            tests.append(partial(lambda t, ep: ep <= t, float(token.lstrip("=<"))))
+
+        elif token.startswith("<"):
+            tests.append(partial(lambda t, ep: ep < t, float(token.lstrip("<"))))
+
+        elif token.endswith(">="):
+            tests.append(partial(lambda t, ep: ep >= t, float(token.rstrip(">="))))
+
+        elif token.endswith(">"):
+            tests.append(partial(lambda t, ep: ep > t, float(token.rstrip(">"))))
+
+        else:
+            raise RuntimeError("invalid query")
+
+    def generated_filter(ep):
+        return any([test(float(ep)) for test in tests])
 
     return generated_filter
 
@@ -92,7 +115,8 @@ def fetch_episodes(parser, show, last_watched, shared_data, global_args):
     else:
         episodes = parser.get_episodes(show)
         if global_args.episodes:
-            new = list(filter(generate_episode_filter(global_args.episodes), episodes))
+            ep_filter = generate_episode_filter(global_args.episodes)
+            new = list(filter(lambda s: ep_filter(s["episode"]), episodes))
         else:
             new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
 
@@ -153,7 +177,7 @@ def main(args):
             temp_downloads_list.extend(downloads[show])
 
     downloads = temp_downloads_list
-    
+
     # after we iterated on all of the shows we have a list of stuff to download.
     # but first we must check the list if it contains data:
     if not downloads:
