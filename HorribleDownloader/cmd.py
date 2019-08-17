@@ -55,8 +55,7 @@ def generate_episode_filter(episodes):
         return default_filter
 
     tests = []
-    for t in episodes.split(","):
-        token = t
+    for token in episodes.split(","):
         # we have multiple options:
         # N, N1-N2, =<N, <N, N>=, N>
         # each of those options adds a test to a list.
