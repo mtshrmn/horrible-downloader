@@ -78,3 +78,10 @@ class CMDTest(unittest.TestCase):
             f = cmd.generate_episode_filter(q)
             filtered = list(filter(f, e))
             self.assertEqual(filtered, a)
+
+    def test_dict_flat(self):
+        o = {"foo": [1, 2, 3, 4, 5],
+             "bar": ["a", "b", "c", "d"],
+             "baz": [6, "e"]}
+        o_flat = cmd.flatten_dict(o)
+        self.assertEqual(o_flat, [1, 2, 3, 4, 5, "a", "b", "c", "d", 6, "e"])
