@@ -137,6 +137,17 @@ def fetch_episodes(parser, show, last_watched, shared_data, global_args):
                 else:
                     print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
+def flatten_dict(dictionary):
+    # flatten a dictionary into a list.
+    # the transformation:
+    # {"key1": [val1, val2, ...], "key2": [val3, val4, ...], ...} -> [val1, val2, val3, val4, ...]
+    flat = []
+    for key in dictionary.keys():
+        if dictionary[key]:
+            flat.extend(dictionary[key])
+
+    return flat
+
 def main(args):
     clear()
     CONFIG = ConfigManager()
@@ -170,17 +181,11 @@ def main(args):
     for proc in procs:
         proc.join()
 
-    # convert downloads dict to a flat list
-    temp_downloads_list = []
-    for show in downloads.keys():
-        if downloads[show]:
-            temp_downloads_list.extend(downloads[show])
-
-    downloads = temp_downloads_list
+    downloads_flat = flatten_dict(downloads)
 
     # after we iterated on all of the shows we have a list of stuff to download.
     # but first we must check the list if it contains data:
-    if not downloads:
+    if not downloads_flat:
         if args.download: # we want to display a different message in each case.
             print(fg(1) + "Couldn't find specified anime. Exiting" + fg.rs)
         else:
@@ -188,8 +193,8 @@ def main(args):
         exit(1) # arguably should be exit code 0
 
     # summerizing info about the download
-    print(f'{fg(2)}\nFound {len(downloads)} {"files" if len(downloads) > 1 else "file"} to download:\n{fg.rs}')
-    for episode in downloads:
+    print(f'{fg(2)}\nFound {len(downloads_flat)} {"files" if len(downloads_flat) > 1 else "file"} to download:\n{fg.rs}')
+    for episode in downloads_flat:
         for quality in QUALITIES:
             print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
 
