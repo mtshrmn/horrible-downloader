@@ -218,7 +218,7 @@ def main(args):
 
     #l et the downloads begin!
     abs_path = os.path.expanduser(CONFIG.download_dir)
-    for episode_obj in reversed(downloads):
+    for episode_obj in reversed(downloads_flat):
         download(episode_obj, QUALITIES, abs_path)
 
         if not args.download:
