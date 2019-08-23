@@ -165,6 +165,40 @@ def reprint_results(data, qualities):
         for quality in qualities:
             print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
 
+try:
+    # POSIX system: Create and return a getch that manipulates the tty
+    import termios
+    import sys, tty
+    def getch():
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            return ch
+
+    # Read arrow keys correctly
+    def getKey():
+        firstChar = getch()
+        if firstChar == '\x1b':
+            return {"[A": "up", "[B": "down"}[getch() + getch()]
+        else:
+            return firstChar
+
+except ImportError:
+    # Non-POSIX: Return msvcrt's (Windows') getch
+    from msvcrt import getch
+
+    # Read arrow keys correctly
+    def getKey():
+        firstChar = getch()
+        if firstChar == b'\xe0':
+            return {"H": "up", "P": "down"}[getch()]
+        else:
+            return firstChar
+
 def main(args):
     clear()
     CONFIG = ConfigManager()
@@ -216,7 +250,7 @@ def main(args):
         pass
 
     elif inp in ("Y", "y", "yes", "Yes"): # do the re-arrangment
-        print("press SPACE to select a show and ESC to de-select, use UP/DOWN to arrange")
+        print("press SPACE to toggle select a show, use UP/DOWN to arrange, when done - press RETURN")
 
         # set some helpful variables
         shows_download_keys = downloads.keys()
@@ -237,31 +271,22 @@ def main(args):
                 else:
                     print(f"{i+1}. {show}")
 
-            if os.name == "nt":
-                from msvcrt import getch
-            else:
-                from getch import getch
+            keypress = getKey()
+            if keypress == " ": # SPACE
+                selected = not selected
 
-            initial_char = getch()
-            if initial_char == b"\x1b": #ESC
-                selected = False
-
-            elif initial_char == b" ": # SPACE
-                selected = True
-
-            elif initial_char == b"\xe0": # ARROWS (ANY)
+            elif keypress in ("up", "down"): # ARROWS (ANY)
                 # this has to be done no matter which arrow key is pressed:
                 if selected:
                     removed = shows_download_keys.pop(current_index)
 
                 # this is how it works to detect the individual arrows.
                 # https://www.daniweb.com/posts/jump/1087957
-                arrow_char = getch()
-                if arrow_char == b"H": # UP
+                if keypress == "up": # UP
                     if current_index > 0:
                         current_index -= 1
 
-                elif arrow_char == b"P": # DOWN
+                elif keypress == "down": # DOWN
                     if current_index < len(shows_download_keys) - (0 if selected else 1):
                         current_index += 1
 
@@ -269,7 +294,7 @@ def main(args):
                 if selected:
                     shows_download_keys.insert(current_index, removed)
 
-            elif initial_char == b"\r": # RETURN
+            elif keypress == "\r": # RETURN
                 for show in shows_download_keys:
                     downloads[show] = downloads.pop(show)
 

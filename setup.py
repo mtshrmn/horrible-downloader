@@ -24,15 +24,14 @@ setup(
     description='HorribleSubs API',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=filter(lambda v: v, [
+    install_requires=[
         'beautifulsoup4>=4',
         'requests>=2',
         'lxml>=4',
         'sty>=1.0.0b9',
         'fuzzywuzzy>=0.16',
         'python-levenshtein>=0.12',
-        'getch>=1.0' if os.name != "nt" else ''
-    ]),
+    ],
     entry_points={
         "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:cli"]
     },
