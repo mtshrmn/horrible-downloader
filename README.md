@@ -9,9 +9,7 @@
 ## Installation
 
 ```sh
-> git clone https://github.com/jelomite/horrible-downloader.git
-> cd horrible-downloader
-> pip install .
+> pip install Horrible-Downloader
 ```
 
 ## Dependencies
