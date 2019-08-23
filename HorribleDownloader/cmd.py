@@ -99,43 +99,46 @@ def download(episode, qualities, path):
         subprocess.call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"", shell=True)
 
 def fetch_episodes(parser, show, last_watched, shared_data, global_args):
-    # default values for
-    new = []
-    shared_data[show] = []
-    # print info if not quiet mode
-    if not global_args.quiet:
-        titles = shared_data.keys()
-        clear()
-        for title in titles:
-            print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+    try:
+        # default values for
+        new = []
+        shared_data[show] = []
+        # print info if not quiet mode
+        if not global_args.quiet:
+            titles = shared_data.keys()
+            clear()
+            for title in titles:
+                print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
-    if global_args.batch:
-        new = parser.get_batches(show)
-        shared_data[show] = new[0]
-    else:
-        episodes = parser.get_episodes(show)
-        if global_args.episodes:
-            ep_filter = generate_episode_filter(global_args.episodes)
-            new = list(filter(lambda s: ep_filter(s["episode"]), episodes))
+        if global_args.batch:
+            new = parser.get_batches(show)
+            shared_data[show] = new[0]
         else:
-            new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
-
-        shared_data[show] = new if new else None
-
-    # print the dots...
-    if not global_args.quiet:
-
-        titles = shared_data.keys()
-        clear()
-        for title in titles:
-            dots = "." * (50 - len(str(title)))
-            if shared_data[title]:
-                print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}FOUND ({str(len(shared_data[title]))}){fg.rs}")
+            episodes = parser.get_episodes(show)
+            if global_args.episodes:
+                ep_filter = generate_episode_filter(global_args.episodes)
+                new = list(filter(lambda s: ep_filter(s["episode"]), episodes))
             else:
-                if shared_data[title] is None:
-                    print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+                new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
+
+            shared_data[show] = new if new else None
+
+        # print the dots...
+        if not global_args.quiet:
+
+            titles = shared_data.keys()
+            clear()
+            for title in titles:
+                dots = "." * (50 - len(str(title)))
+                if shared_data[title]:
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}FOUND ({str(len(shared_data[title]))}){fg.rs}")
                 else:
-                    print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+                    if shared_data[title] is None:
+                        print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+                    else:
+                        print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+    except KeyboardInterrupt:
+        pass
 
 def flatten_dict(dictionary):
     # flatten a dictionary into a list.
@@ -320,40 +323,44 @@ def main(args):
                 CONFIG.conf.write(f)
 
 def cli():
-    parser = argparse.ArgumentParser(description='horrible script for downloading anime')
-    parser.add_argument('-d', '--download', help="download a specific anime", type=str)
-    parser.add_argument('-o', '--output', help="directory to which it will download the files", type=str)
-    parser.add_argument('-e', '--episodes', help="specify specific episodes to download", type=str)
-    parser.add_argument('-l', '--list', help="display list of available episodes", action="store_true")
-    parser.add_argument('-r', '--resolution', help="specify resolution quality", type=str)
-    parser.add_argument('--subscribe', help="add a show to the config file", type=str)
-    parser.add_argument('--batch', help="search for batches as well as regular files", action="store_true")
-    parser.add_argument('-q', '--quiet', help="set quiet mode on", action="store_true")
-    parser.add_argument('-lc', '--list-current', help="list all currently airing shows", action="store_true")
-    args = parser.parse_args()
+    try:
+        parser = argparse.ArgumentParser(description='horrible script for downloading anime')
+        parser.add_argument('-d', '--download', help="download a specific anime", type=str)
+        parser.add_argument('-o', '--output', help="directory to which it will download the files", type=str)
+        parser.add_argument('-e', '--episodes', help="specify specific episodes to download", type=str)
+        parser.add_argument('-l', '--list', help="display list of available episodes", action="store_true")
+        parser.add_argument('-r', '--resolution', help="specify resolution quality", type=str)
+        parser.add_argument('--subscribe', help="add a show to the config file", type=str)
+        parser.add_argument('--batch', help="search for batches as well as regular files", action="store_true")
+        parser.add_argument('-q', '--quiet', help="set quiet mode on", action="store_true")
+        parser.add_argument('-lc', '--list-current', help="list all currently airing shows", action="store_true")
+        args = parser.parse_args()
 
-    if args.subscribe:
-        episode_number = args.episodes if args.episodes else "0"
-        status, show = subscribe_to(args.subscribe, episode_number)
+        if args.subscribe:
+            episode_number = args.episodes if args.episodes else "0"
+            status, show = subscribe_to(args.subscribe, episode_number)
 
-        if status:
-            print(f"Successfully subscribed to: \"{show.lower()}\"")
-            print(f"Latest watched episode is - {episode_number}")
-        else:
-            print(f"You're already subscribed to \"{show}\", omitting changes...")
-        exit(0)
+            if status:
+                print(f"Successfully subscribed to: \"{show.lower()}\"")
+                print(f"Latest watched episode is - {episode_number}")
+            else:
+                print(f"You're already subscribed to \"{show}\", omitting changes...")
+            exit(0)
 
-    if args.list:
-        shows = list(Parser().shows.keys())
-        print("\n".join(shows))
-        exit(0)
+        if args.list:
+            shows = list(Parser().shows.keys())
+            print("\n".join(shows))
+            exit(0)
 
-    if args.list_current:
-        shows = list(Parser().current_shows)
-        print("\n".join(shows))
-        exit(0)
+        if args.list_current:
+            shows = list(Parser().current_shows)
+            print("\n".join(shows))
+            exit(0)
 
-    main(args)
+        main(args)
+
+    except KeyboardInterrupt:
+        print(f"{fg(1)}\nAborting download...{fg.rs}")
 
 
 if __name__ == "__main__":
