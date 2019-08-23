@@ -84,4 +84,4 @@ class CMDTest(unittest.TestCase):
              "bar": ["a", "b", "c", "d"],
              "baz": [6, "e"]}
         o_flat = cmd.flatten_dict(o)
-        self.assertEqual(o_flat, [1, 2, 3, 4, 5, "a", "b", "c", "d", 6, "e"])
+        self.assertEqual(o_flat, [5, 4, 3, 2, 1, "d", "c", "b", "a", "e", 6])

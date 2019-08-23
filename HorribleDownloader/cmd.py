@@ -7,6 +7,7 @@ from HorribleDownloader import Parser, ConfigManager
 from sty import fg
 import multiprocessing
 from functools import partial
+import msvcrt
 
 def clear(): # function to clear the screan
     os.system("cls" if os.name == "nt" else "clear")
@@ -144,7 +145,7 @@ def flatten_dict(dictionary):
     flat = []
     for key in dictionary.keys():
         if dictionary[key]:
-            flat.extend(dictionary[key])
+            flat.extend(reversed(dictionary[key]))
 
     return flat
 
@@ -212,13 +213,76 @@ def main(args):
     # summerizing info about the download
     reprint_results(downloads, QUALITIES)
     inp = input(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}')
-    if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
+    if inp is "": # continue as usually.
+        pass
+
+    elif inp in ("Y", "y", "yes", "Yes"): # do the re-arrangment
+        print("press SPACE to select a show and ESC to de-select, use UP/DOWN to arrange")
+
+        # set some helpful variables
+        shows_download_keys = downloads.keys()
+        current_index = 0
+        selected = False
+
+        while True:
+            # printing all of the info from before, to reset the new data
+            reprint_results(downloads, QUALITIES)
+            print(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}', inp)
+            print("press SPACE to select a show and ESC to de-select, use UP/DOWN to arrange")
+            for i, show in enumerate(shows_download_keys): # here we set the colors of the new data
+                if i == current_index:
+                    if selected:
+                        print(f"{fg(12)}{i+1}. {show}{fg.rs}")
+                    else:
+                        print(f"{fg(3)}{i+1}. {fg.rs}{show}")
+                else:
+                    print(f"{i+1}. {show}")
+
+            initial_char = msvcrt.getch()
+            if initial_char == b"\x1b": #ESC
+                selected = False
+
+            elif initial_char == b" ": # SPACE
+                selected = True
+
+            elif initial_char == b"\xe0": # ARROWS (ANY)
+                # this has to be done no matter which arrow key is pressed:
+                if selected:
+                    removed = shows_download_keys.pop(current_index)
+
+                # this is how it works to detect the individual arrows.
+                # https://www.daniweb.com/posts/jump/1087957
+                arrow_char = msvcrt.getch()
+                if arrow_char == b"H": # UP
+                    if current_index > 0:
+                        current_index -= 1
+
+                elif arrow_char == b"P": # DOWN
+                    if current_index < len(shows_download_keys) - (0 if selected else 1):
+                        current_index += 1
+
+                # once we know what key was pressed, we need to return the value we removed
+                if selected:
+                    shows_download_keys.insert(current_index, removed)
+
+            elif initial_char == b"\r": # RETURN
+                for show in shows_download_keys:
+                    downloads[show] = downloads.pop(show)
+
+                downloads_flat = flatten_dict(downloads)
+                print(f"{fg(3)}The download order will be as follows:{fg.rs}\n")
+                for episode in downloads_flat:
+                    for quality in QUALITIES:
+                        print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+                break
+
+    else:
         print(fg(1) + 'aborting download\n' + fg.rs)
         exit(1)
 
     #l et the downloads begin!
     abs_path = os.path.expanduser(CONFIG.download_dir)
-    for episode_obj in reversed(downloads_flat):
+    for episode_obj in downloads_flat:
         download(episode_obj, QUALITIES, abs_path)
 
         if not args.download:
