@@ -7,7 +7,6 @@ from HorribleDownloader import Parser, ConfigManager
 from sty import fg
 import multiprocessing
 from functools import partial
-import msvcrt
 
 def clear(): # function to clear the screan
     os.system("cls" if os.name == "nt" else "clear")
@@ -238,7 +237,12 @@ def main(args):
                 else:
                     print(f"{i+1}. {show}")
 
-            initial_char = msvcrt.getch()
+            if os.name == "nt":
+                from msvcrt import getch
+            else:
+                from getch import getch
+
+            initial_char = getch()
             if initial_char == b"\x1b": #ESC
                 selected = False
 
@@ -252,7 +256,7 @@ def main(args):
 
                 # this is how it works to detect the individual arrows.
                 # https://www.daniweb.com/posts/jump/1087957
-                arrow_char = msvcrt.getch()
+                arrow_char = getch()
                 if arrow_char == b"H": # UP
                     if current_index > 0:
                         current_index -= 1

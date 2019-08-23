@@ -1,6 +1,7 @@
 from setuptools import setup
 from setuptools.command.install import install
 import subprocess
+import os
 
 with open("README.md", 'r') as f:
     long_description = f.read()
@@ -14,7 +15,7 @@ class custom_install(install):
 
 setup(
     name='Horrible-Downloader',
-    version='0.1.8',
+    version='0.1.9',
     packages=['HorribleDownloader'],
     url='https://github.com/Jelomite/horrible-downloader',
     license='MIT',
@@ -23,14 +24,15 @@ setup(
     description='HorribleSubs API',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=[
+    install_requires=filter(lambda v: v, [
         'beautifulsoup4>=4',
         'requests>=2',
         'lxml>=4',
         'sty>=1.0.0b9',
         'fuzzywuzzy>=0.16',
-        'python-levenshtein>=0.12'
-    ],
+        'python-levenshtein>=0.12',
+        'getch>=1.0' if os.name != "nt" else ''
+    ]),
     entry_points={
         "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:cli"]
     },
