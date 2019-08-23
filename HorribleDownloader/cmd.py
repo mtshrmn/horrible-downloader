@@ -148,6 +148,23 @@ def flatten_dict(dictionary):
 
     return flat
 
+def reprint_results(data, qualities):
+    # resets console output until the state of re-arranging
+    titles = data.keys()
+    clear()
+    for title in titles:
+        dots = "." * (50 - len(str(title)))
+        if data[title]:
+            print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}FOUND ({str(len(data[title]))}){fg.rs}")
+        else:
+            print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+
+    data_flat = flatten_dict(data)
+    print(f'{fg(2)}\nFound {len(data_flat)} {"files" if len(data_flat) > 1 else "file"} to download:\n{fg.rs}')
+    for episode in data_flat:
+        for quality in qualities:
+            print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+
 def main(args):
     clear()
     CONFIG = ConfigManager()
@@ -193,12 +210,8 @@ def main(args):
         exit(1) # arguably should be exit code 0
 
     # summerizing info about the download
-    print(f'{fg(2)}\nFound {len(downloads_flat)} {"files" if len(downloads_flat) > 1 else "file"} to download:\n{fg.rs}')
-    for episode in downloads_flat:
-        for quality in QUALITIES:
-            print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
-
-    inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
+    reprint_results(downloads, QUALITIES)
+    inp = input(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}')
     if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
         print(fg(1) + 'aborting download\n' + fg.rs)
         exit(1)
