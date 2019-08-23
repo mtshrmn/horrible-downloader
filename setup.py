@@ -1,6 +1,7 @@
 from setuptools import setup
 from setuptools.command.install import install
 import subprocess
+import os
 
 with open("README.md", 'r') as f:
     long_description = f.read()
@@ -14,7 +15,7 @@ class custom_install(install):
 
 setup(
     name='Horrible-Downloader',
-    version='0.1.8',
+    version='0.1.9',
     packages=['HorribleDownloader'],
     url='https://github.com/Jelomite/horrible-downloader',
     license='MIT',
@@ -29,7 +30,7 @@ setup(
         'lxml>=4',
         'sty>=1.0.0b9',
         'fuzzywuzzy>=0.16',
-        'python-levenshtein>=0.12'
+        'python-levenshtein>=0.12',
     ],
     entry_points={
         "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:cli"]

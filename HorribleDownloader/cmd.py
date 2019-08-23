@@ -137,6 +137,68 @@ def fetch_episodes(parser, show, last_watched, shared_data, global_args):
                 else:
                     print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
+def flatten_dict(dictionary):
+    # flatten a dictionary into a list.
+    # the transformation:
+    # {"key1": [val1, val2, ...], "key2": [val3, val4, ...], ...} -> [val1, val2, val3, val4, ...]
+    flat = []
+    for key in dictionary.keys():
+        if dictionary[key]:
+            flat.extend(reversed(dictionary[key]))
+
+    return flat
+
+def reprint_results(data, qualities):
+    # resets console output until the state of re-arranging
+    titles = data.keys()
+    clear()
+    for title in titles:
+        dots = "." * (50 - len(str(title)))
+        if data[title]:
+            print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}FOUND ({str(len(data[title]))}){fg.rs}")
+        else:
+            print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+
+    data_flat = flatten_dict(data)
+    print(f'{fg(2)}\nFound {len(data_flat)} {"files" if len(data_flat) > 1 else "file"} to download:\n{fg.rs}')
+    for episode in data_flat:
+        for quality in qualities:
+            print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+
+try:
+    # POSIX system: Create and return a getch that manipulates the tty
+    import termios
+    import sys, tty
+    def getch():
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            return ch
+
+    # Read arrow keys correctly
+    def getKey():
+        firstChar = getch()
+        if firstChar == '\x1b':
+            return {"[A": "up", "[B": "down"}[getch() + getch()]
+        else:
+            return firstChar
+
+except ImportError:
+    # Non-POSIX: Return msvcrt's (Windows') getch
+    from msvcrt import getch
+
+    # Read arrow keys correctly
+    def getKey():
+        firstChar = getch()
+        if firstChar == b'\xe0':
+            return {"H": "up", "P": "down"}[getch().decode("UTF-8")]
+        else:
+            return firstChar.decode("UTF-8")
+
 def main(args):
     clear()
     CONFIG = ConfigManager()
@@ -170,17 +232,11 @@ def main(args):
     for proc in procs:
         proc.join()
 
-    # convert downloads dict to a flat list
-    temp_downloads_list = []
-    for show in downloads.keys():
-        if downloads[show]:
-            temp_downloads_list.extend(downloads[show])
-
-    downloads = temp_downloads_list
+    downloads_flat = flatten_dict(downloads)
 
     # after we iterated on all of the shows we have a list of stuff to download.
     # but first we must check the list if it contains data:
-    if not downloads:
+    if not downloads_flat:
         if args.download: # we want to display a different message in each case.
             print(fg(1) + "Couldn't find specified anime. Exiting" + fg.rs)
         else:
@@ -188,19 +244,74 @@ def main(args):
         exit(1) # arguably should be exit code 0
 
     # summerizing info about the download
-    print(f'{fg(2)}\nFound {len(downloads)} {"files" if len(downloads) > 1 else "file"} to download:\n{fg.rs}')
-    for episode in downloads:
-        for quality in QUALITIES:
-            print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+    reprint_results(downloads, QUALITIES)
+    inp = input(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}')
+    if inp is "": # continue as usually.
+        pass
 
-    inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
-    if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
+    elif inp in ("Y", "y", "yes", "Yes"): # do the re-arrangment
+        print("press SPACE to toggle select a show, use UP/DOWN to arrange, when done - press RETURN")
+
+        # set some helpful variables
+        shows_download_keys = downloads.keys()
+        current_index = 0
+        selected = False
+
+        while True:
+            # printing all of the info from before, to reset the new data
+            reprint_results(downloads, QUALITIES)
+            print(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}', inp)
+            print("press SPACE to toggle select a show, use UP/DOWN to arrange, when done - press RETURN")
+            for i, show in enumerate(shows_download_keys): # here we set the colors of the new data
+                if i == current_index:
+                    if selected:
+                        print(f"{fg(12)}{i+1}. {show}{fg.rs}")
+                    else:
+                        print(f"{fg(3)}{i+1}. {fg.rs}{show}")
+                else:
+                    print(f"{i+1}. {show}")
+
+            keypress = getKey()
+            if keypress == " ": # SPACE
+                selected = not selected
+
+            elif keypress in ("up", "down"): # ARROWS (ANY)
+                # this has to be done no matter which arrow key is pressed:
+                if selected:
+                    removed = shows_download_keys.pop(current_index)
+
+                # this is how it works to detect the individual arrows.
+                # https://www.daniweb.com/posts/jump/1087957
+                if keypress == "up": # UP
+                    if current_index > 0:
+                        current_index -= 1
+
+                elif keypress == "down": # DOWN
+                    if current_index < len(shows_download_keys) - (0 if selected else 1):
+                        current_index += 1
+
+                # once we know what key was pressed, we need to return the value we removed
+                if selected:
+                    shows_download_keys.insert(current_index, removed)
+
+            elif keypress == "\r": # RETURN
+                for show in shows_download_keys:
+                    downloads[show] = downloads.pop(show)
+
+                downloads_flat = flatten_dict(downloads)
+                print(f"{fg(3)}The download order will be as follows:{fg.rs}\n")
+                for episode in downloads_flat:
+                    for quality in QUALITIES:
+                        print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+                break
+
+    else:
         print(fg(1) + 'aborting download\n' + fg.rs)
         exit(1)
 
     #l et the downloads begin!
     abs_path = os.path.expanduser(CONFIG.download_dir)
-    for episode_obj in reversed(downloads):
+    for episode_obj in downloads_flat:
         download(episode_obj, QUALITIES, abs_path)
 
         if not args.download:
