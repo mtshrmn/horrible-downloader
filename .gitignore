@@ -5,3 +5,4 @@ idea/
 build/
 Horrible_Downloader.egg-info/
 test/
+dist/
