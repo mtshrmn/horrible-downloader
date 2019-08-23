@@ -195,9 +195,9 @@ except ImportError:
     def getKey():
         firstChar = getch()
         if firstChar == b'\xe0':
-            return {"H": "up", "P": "down"}[getch()]
+            return {"H": "up", "P": "down"}[getch().decode("UTF-8")]
         else:
-            return firstChar
+            return firstChar.decode("UTF-8")
 
 def main(args):
     clear()
@@ -261,7 +261,7 @@ def main(args):
             # printing all of the info from before, to reset the new data
             reprint_results(downloads, QUALITIES)
             print(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}', inp)
-            print("press SPACE to select a show and ESC to de-select, use UP/DOWN to arrange")
+            print("press SPACE to toggle select a show, use UP/DOWN to arrange, when done - press RETURN")
             for i, show in enumerate(shows_download_keys): # here we set the colors of the new data
                 if i == current_index:
                     if selected:
