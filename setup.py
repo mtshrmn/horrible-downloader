@@ -14,7 +14,7 @@ class custom_install(install):
         install.run(self)
 
 setup(
-    name='Horrible-Downloader',
+    name='horrible-downloader',
     version='1.0',
     packages=['HorribleDownloader'],
     url='https://github.com/Jelomite/horrible-downloader',

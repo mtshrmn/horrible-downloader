@@ -3,6 +3,6 @@ conf.ini
 idea/
 .idea/
 build/
-Horrible_Downloader.egg-info/
+horrible_downloader.egg-info/
 test/
 dist/
