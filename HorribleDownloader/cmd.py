@@ -98,17 +98,18 @@ def download(episode, qualities, path):
     for quality in qualities:
         subprocess.call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"", shell=True)
 
-def fetch_episodes(parser, show, last_watched, shared_data, global_args):
+def fetch_episodes(parser, show, last_watched, shared_data, global_args, lock):
     try:
         # default values for
         new = []
         shared_data[show] = []
         # print info if not quiet mode
         if not global_args.quiet:
-            titles = shared_data.keys()
-            clear()
-            for title in titles:
-                print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+            with lock:
+                titles = shared_data.keys()
+                clear()
+                for title in titles:
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
         if global_args.batch:
             new = parser.get_batches(show)
@@ -125,18 +126,18 @@ def fetch_episodes(parser, show, last_watched, shared_data, global_args):
 
         # print the dots...
         if not global_args.quiet:
-
-            titles = shared_data.keys()
-            clear()
-            for title in titles:
-                dots = "." * (50 - len(str(title)))
-                if shared_data[title]:
-                    print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}FOUND ({str(len(shared_data[title]))}){fg.rs}")
-                else:
-                    if shared_data[title] is None:
-                        print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+            with lock:
+                titles = shared_data.keys()
+                clear()
+                for title in titles:
+                    dots = "." * (50 - len(str(title)))
+                    if shared_data[title]:
+                        print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}FOUND ({str(len(shared_data[title]))}){fg.rs}")
                     else:
-                        print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+                        if shared_data[title] is None:
+                            print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+                        else:
+                            print(f"{fg(3)}FETCHING:{fg.rs} {title}")
     except KeyboardInterrupt:
         pass
 
@@ -222,12 +223,13 @@ def main(args):
 
     downloads = multiprocessing.Manager().dict()
     procs = []
+    l = multiprocessing.Lock()
 
     # all the variables set, lets start with the iterations:
     for show, last_watched in [(title, 0)] if args.download else CONFIG.subscriptions:
         proc = multiprocessing.Process(
         target=fetch_episodes,
-        args=(PARSER, show, last_watched, downloads, args))
+        args=(PARSER, show, last_watched, downloads, args, l))
 
         proc.start()
         procs.append(proc)
