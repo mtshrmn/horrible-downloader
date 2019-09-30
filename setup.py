@@ -15,7 +15,7 @@ class custom_install(install):
 
 setup(
     name='horrible-downloader',
-    version='1.0.3',
+    version='1.0.4',
     packages=['HorribleDownloader'],
     url='https://github.com/Jelomite/horrible-downloader',
     license='MIT',
