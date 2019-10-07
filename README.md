@@ -113,7 +113,7 @@ optional arguments:
   -r RESOLUTION, --resolution RESOLUTION     specify resolution quality, defaults to config file
   --subscribe SHOW [-e EPISODE]              add a show to the config file.
   --batch                                    search for batches as well as regular files
-
+  --noconfirm                                bypass any and all “Are you sure?” messages.
 ```
 ##### Episodes & Resolution Formating:
 Those two flags have a special syntax which allows for a better specification interface.
