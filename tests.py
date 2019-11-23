@@ -85,3 +85,7 @@ class CMDTest(unittest.TestCase):
              "baz": [6, "e"]}
         o_flat = cmd.flatten_dict(o)
         self.assertEqual(o_flat, [5, 4, 3, 2, 1, "d", "c", "b", "a", "e", 6])
+
+        batch = {"foo": {"baz": "bar"}}
+        batch_flat = [{"baz": "bar"}]
+        self.assertEqual(cmd.flatten_dict(batch), batch_flat)

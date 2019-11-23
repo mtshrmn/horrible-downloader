@@ -147,9 +147,12 @@ def flatten_dict(dictionary):
     # {"key1": [val1, val2, ...], "key2": [val3, val4, ...], ...} -> [val1, val2, val3, val4, ...]
     flat = []
     for key in dictionary.keys():
-        if dictionary[key]:
-            flat.extend(reversed(dictionary[key]))
-
+        value = dictionary[key]
+        if value:
+            if type(value) == list:
+                flat.extend(reversed(value))
+            elif type(value) == dict:
+                flat.extend([value])
     return flat
 
 def reprint_results(data, qualities):
