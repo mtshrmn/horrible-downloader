@@ -250,10 +250,13 @@ def main(args):
         else:
             print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
         exit(1) # arguably should be exit code 0
+    if args.noconfirm:
+        inp = ""
+    else:
+        # summerizing info about the download
+        reprint_results(downloads, QUALITIES)
+        inp = input(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}')
 
-    # summerizing info about the download
-    reprint_results(downloads, QUALITIES)
-    inp = input(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}')
     if inp is "": # continue as usually.
         pass
 
@@ -339,6 +342,7 @@ def cli():
         parser.add_argument('--batch', help="search for batches as well as regular files", action="store_true")
         parser.add_argument('-q', '--quiet', help="set quiet mode on", action="store_true")
         parser.add_argument('-lc', '--list-current', help="list all currently airing shows", action="store_true")
+        parser.add_argument('--noconfirm', help="Bypass any and all “Are you sure?” messages.", action="store_true")
         args = parser.parse_args()
 
         if args.subscribe:
