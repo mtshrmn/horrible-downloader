@@ -3,7 +3,7 @@ from setuptools.command.install import install
 import subprocess
 import os
 
-with open("README.md", 'r') as f:
+with open("README.md", 'r', encoding="utf8") as f:
     long_description = f.read()
 
 class custom_install(install):
@@ -37,10 +37,10 @@ setup(
     },
     include_package_data=True,
     zip_safe=False,
-    classifiers=(
+    classifiers=[
         "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-    ),
+    ],
     cmdclass={"install": custom_install}
 )
