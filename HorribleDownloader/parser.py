@@ -87,7 +87,7 @@ class Parser:
     def get_episodes(self, show: str, limit=1000):
         showid = self._get_show_id(show)
         shows_html = self._get_html(showid, limit)
-        return list(self._parse_html(shows_html))
+        return list(self._parse_html(shows_html))[:limit]
 
     def get_batches(self, show: str):
         showid = self._get_show_id(show)
