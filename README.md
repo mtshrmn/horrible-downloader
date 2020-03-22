@@ -45,10 +45,10 @@ The parser will allow us to fetch data from [horriblesubs](horriblesubs.info). h
 - **current_shows** - List all currently airing shows. equivalent to https://horriblesubs.info/current-season/.
 - **get_episodes(show: str, limit=1000)** - Returns a list of episodes from the specified show. By default will return the last 1000 episodes (of course, most shows don't even reach the 100th episode). The function works in reverse, this means the _limit_ argument goes from the latest episode until it reaches its limit (or it has reached the first episode). E.g:
 ``` python
-	parser = Parser()
-	episodes = parser.get_episodes("one piece", limit=7)
-	# lets assume the latest episode is 495
-	map(lambda episode: episode["episode"], episodes) # -> [495, 494, 493, 492, 491, 490, 489]
+parser = Parser()
+episodes = parser.get_episodes("one piece", limit=7)
+# lets assume the latest episode is 495
+map(lambda episode: episode["episode"], episodes) # -> [495, 494, 493, 492, 491, 490, 489]
 
 ```
 - **get_batches(show: str)** - Returns the batches of the show (if it exists).
