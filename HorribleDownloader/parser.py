@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-from fuzzywuzzy import process as fuzzy_match
+from rapidfuzz import process as fuzzy_match
 
 
 class Parser:

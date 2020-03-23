@@ -29,8 +29,7 @@ setup(
         'requests>=2',
         'lxml>=4',
         'sty>=1.0.0b9',
-        'fuzzywuzzy>=0.16',
-        'python-levenshtein>=0.12',
+        'rapidfuzz>=0.2.1',
     ],
     entry_points={
         "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:cli"]
