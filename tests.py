@@ -1,8 +1,35 @@
 from httmock import urlmatch, HTTMock
 import unittest
-from HorribleDownloader import Parser, cmd
+from unittest import mock
+from HorribleDownloader import Parser, cmd, ConfigManager
 from urllib.parse import parse_qs
 import itertools
+
+class MockedConfigParser:
+    def __init__(self):
+        self.conf = "TO CHANGE THE VALUE"
+
+    def write(self, file):
+        return True
+
+    def __getitem__(self, item):
+        conf = {
+            "subscriptions": {
+                "A": 1,
+                "B": 2
+            },
+            "settings": {
+                "resolution": "480",
+                "download_dir": "download_dir"
+            },
+        }
+        return conf[item]
+
+class MockedConfigManager(ConfigManager):
+    def _parse_conf(self):
+        config = MockedConfigParser();
+        return config;
+
 
 @urlmatch(scheme="https", netloc="horriblesubs.info", path="/current-season/")
 def current_season_mock(url, request):
