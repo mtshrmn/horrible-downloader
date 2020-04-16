@@ -21,6 +21,6 @@ jobs:
 install:
   - pip3 install --upgrade pip
   - pip3 install httmock
-  - pip install ".[test]"
+  - pip3 install ".[test]"
 script:
   - python3 -m unittest discover || python -m unittest discover
