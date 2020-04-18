@@ -26,4 +26,5 @@ install:
 script:
   - coverage run -m unittest discover
 after_success:
-  - bash < (curl -s https://codecov.io/bash)
+  - curl -s https://codecov.io/bash > uploader.sh
+  - bash uploader.sh
