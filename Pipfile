@@ -10,6 +10,11 @@ beautifulsoup4 = ">=4"
 lxml = ">=4"
 requests = ">=2"
 urllib3 = ">=1.23"
-rapidfuzz = ">=0.2.1"
+rapidfuzz = "==0.7.8"
 sty = ">=1.0.0b9"
 httmock = ">=1.0"
+coverage = "*"
+horrible-downloader = "==1.0.6"
+
+[pipenv]
+allow_prereleases = true
