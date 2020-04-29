@@ -6,6 +6,5 @@ build/
 horrible_downloader.egg-info/
 test/
 dist/
-Pipfile.lock
 htmlcov/
 .coverage
