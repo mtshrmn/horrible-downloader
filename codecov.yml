@@ -1,0 +1,2 @@
+ignore:
+  - "tests.py" # codecov will handle code coverage, travis will handle tests.
