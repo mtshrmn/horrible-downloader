@@ -1,46 +1,41 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-from rapidfuzz import process as fuzzy_match
+from rapidfuzz import process
 
 
 class Parser:
     def __init__(self):
         self.api = "https://horriblesubs.info/api.php"
         self.id_file = "id.json"
-        self.query = {
-            "method": "getshows",
-            "nextid": 0
-        }
 
     def _get_show_id(self, show: str) -> int:
         show = show.replace('&amp;', '&')
         try:
-            key = fuzzy_match.extractOne(show, self.shows.keys())[0]
+            key = process.extractOne(show, self.shows.keys())[0]
         except IndexError:
             return 0
-        # assert the user entered a valid show name
         url = "https://horriblesubs.info/shows/" + self.shows[key]
         html = requests.get(url)
-        match = re.findall("var hs_showid = \d+", html.text)
+        match = re.findall(r"var hs_showid = \d+", html.text)
         return int(match[0].strip("var hs_showid = "))
 
     def _get_html(self, showid, limit, show_type="show"):
-        if show_type not in ("show", "batch"):
-            raise AssertionError("%s is not a valid value" % show_type)
-
-        self.query["showid"] = showid
-        self.query["nextid"] = 0
-        self.query["type"] = show_type
         html = ""
         stop_text = "DONE" if show_type == "show" else "There are no batches for this show yet"
+        query = {
+            "method": "getshows",
+            "showid": showid,
+            "nextid": 0,
+            "type": show_type
+        }
 
         while True:
-            response = requests.get(self.api, params=self.query)
-            if response.text == stop_text or self.query["nextid"] > int(limit / 12):
+            response = requests.get(self.api, params=query)
+            if response.text == stop_text or query["nextid"] > limit // 12:
                 break
             html += response.text
-            self.query["nextid"] += 1
+            query["nextid"] += 1
         return html
 
     @staticmethod
@@ -59,7 +54,7 @@ class Parser:
                 "1080": {}
             }
 
-            indexes = [x for x in ["480", "720", "1080"] for _ in range(int(len(links) / 3))]
+            indexes = [x for x in ["480", "720", "1080"] for _ in range(len(links) // 3)]
             if not indexes:
                 indexes = ["480", "720", "1080"]
             for resolution, link in zip(indexes, links):
