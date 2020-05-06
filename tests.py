@@ -59,18 +59,18 @@ def api_mock(url, request):
 def showid_mock(url, request):
     return "var hs_showid = 123456789"
 
-class MockTest(unittest.TestCase):
-    def setUp(self):
-        self.parser = Parser()
 
+class MockTest(unittest.TestCase):
     def test_current_season(self):
         with HTTMock(current_season_mock):
-            current = self.parser.current_shows
+            mocked_parser = Parser()
+            current = mocked_parser.current_shows
             self.assertEqual(list(current), ["Test 1", "Test 2", "Test 3", "Test 4"])
 
     def test_shows_list(self):
         with HTTMock(shows_mock):
-            shows = self.parser.shows
+            mocked_parser = Parser()
+            shows = mocked_parser.shows
             self.assertEqual(shows, {
                 'Test 1': 'test-1',
                 'Test 2': 'test-2',
@@ -79,15 +79,18 @@ class MockTest(unittest.TestCase):
                 })
 
     def test_get_episodes(self):
-        with HTTMock(api_mock):
-            episodes = self.parser.get_episodes("test", limit=4)
+        with HTTMock(api_mock, shows_mock):
+            mocked_parser = Parser()
+            episodes = mocked_parser.get_episodes("test", limit=4)
             self.assertEqual(len(episodes), 4)
-            batch = self.parser.get_batches("test")
-            self.assertEqual(batch[0]["title"].lower(), "one-punch man")
+            batch = mocked_parser.get_batches("test")
+            self.assertEqual(batch[0]["title"].lower(), "test 4")
 
     def test_show_id(self):
-        with HTTMock(showid_mock):
-            showid = self.parser._get_show_id("doesn't matter")
+        with HTTMock(showid_mock, api_mock):
+            mocked_parser = Parser()
+            proper_title = mocked_parser.get_proper_title("doesn't matter")
+            showid = mocked_parser._get_show_id(proper_title)
             self.assertTrue(showid, 123456789)
 
 
