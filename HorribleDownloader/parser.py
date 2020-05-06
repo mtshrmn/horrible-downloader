@@ -40,8 +40,8 @@ class Parser:
         url = f"https://horriblesubs.info/{page}/"
         html = requests.get(url).text
         soup = BeautifulSoup(html, "lxml")
-        div = soup.find(name="div", attrs={"class": "shows-wrapper"})
-        shows = div.find_all(name="a")
+        div = soup.find("div", {"class": "shows-wrapper"})
+        shows = div.find_all("a")
         for show in shows:
             # each URI starts with `/shows/`, we will remove it here,
             # but we must append it later.
@@ -92,15 +92,15 @@ class Parser:
     @staticmethod
     def _parse_html(html: str) -> Iterable[dict]:
         soup = BeautifulSoup(html, "lxml")
-        episodes = soup.find_all(name="div", attrs={"class": "rls-info-container"})
+        episodes = soup.find_all("div", {"class": "rls-info-container"})
 
         for episode in episodes:
-            downloads = episode.find(name="div", attrs={"rls-links-container"})
-            links = downloads.find_all(name="a", href=True)
+            downloads = episode.find("div", {"class": "rls-links-container"})
+            links = downloads.find_all("a", href=True)
             # the episode object, for now, we only know the episode number
             # all that is left is to add the URIs
             ret = {
-                "episode": episode.find(name="strong").text.replace('v2', ''),
+                "episode": episode.find("strong").text.replace('v2', ''),
                 "480": {},
                 "720": {},
                 "1080": {}
