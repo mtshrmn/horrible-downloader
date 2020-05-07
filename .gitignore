@@ -4,7 +4,6 @@ idea/
 .idea/
 build/
 horrible_downloader.egg-info/
-test/
 dist/
 htmlcov/
 .coverage
