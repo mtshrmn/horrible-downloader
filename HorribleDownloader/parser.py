@@ -52,7 +52,7 @@ class Parser:
         return ret
 
     @staticmethod
-    def _get_html(showid: int, limit: int, type: str) -> str:
+    def _get_html(showid: int, limit: int, show_type: str) -> str:
         # another thing to note - the horriblesubs api runs in reverse
         # which means the first element will be the most recent episode
         # that guarantees us that the first episode will be the last element.1
@@ -72,7 +72,7 @@ class Parser:
             "method": "getshows",
             "showid": showid,
             "nextid": 0,
-            "type": type
+            "type": show_type
         }
         # our python wrapper doesn't use pagination, so it must run over all the pages.
         # because some shows have a huge amount of episodes
@@ -140,10 +140,10 @@ class Parser:
             # if no id was found, return default value
             return -1
 
-    def _get_uris(self, show: str, type: str, limit: int) -> list:
+    def _get_uris(self, show: str, show_type: str, limit: int) -> list:
         title = self.get_proper_title(show)
         showid = self._get_show_id(title)
-        shows_html = self._get_html(showid, limit, type)
+        shows_html = self._get_html(showid, limit, show_type)
         # as discussed in https://github.com/Jelomite/horrible-downloader/issues/24
         # to reduce confusion, the length of episodes should be equal to the limit
         episodes = list(self._parse_html(shows_html))[:limit]
