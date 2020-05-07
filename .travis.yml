@@ -21,10 +21,11 @@ jobs:
 install:
   - pip3 install --upgrade pip
   - pip3 install httmock
+  - pip3 install pytest
   - pip3 install coverage
   - pip3 install ".[test]"
 script:
-  - coverage run -m unittest discover -s test/
+  - coverage run -m pytest -vv
 after_success:
   - curl -s https://codecov.io/bash > uploader.sh
   - bash uploader.sh

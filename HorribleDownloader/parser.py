@@ -82,7 +82,7 @@ class Parser:
             response = requests.get(api, params=query)
             # the limit is counted in number of episodes (or batches)
             # because each page contains 12 episodes, we must divide it by 12.
-            if response.text == stop_text or query["nextid"] > limit // 12:
+            if response.text == stop_text or query["nextid"] >= limit // 12:
                 break
             html += response.text
             query["nextid"] += 1
@@ -136,7 +136,7 @@ class Parser:
             html = requests.get(url)
             match = re.findall(r"var hs_showid = \d+", html.text)
             return int(match[0].strip("var hs_showid = "))
-        except IndexError:
+        except KeyError:
             # if no id was found, return default value
             return -1
 

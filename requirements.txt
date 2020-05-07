@@ -7,3 +7,4 @@ urllib3>=1.23
 rapidfuzz>=0.2.1
 sty>=1.0.0b9
 httmock>=1.0
+pytest>=5.4.1
