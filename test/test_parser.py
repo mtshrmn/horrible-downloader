@@ -28,7 +28,7 @@ def test_get_shows():
             'Test 3': 'test-3',
             'Test 4': 'test-4',
             "Hello & World": "hello&world"
-            }
+        }
 
 
 def test_get_proper_title():
@@ -61,14 +61,15 @@ def test_get_episodes():
         showid = parser._get_show_id(title)
         shows_html = parser._get_html(showid, limit, "show")
         episodes = list(parser._parse_html(shows_html))
-        assert len(episodes) == 12 * round(limit/12)
+        assert len(episodes) == 12 * round(limit / 12)
 
         proper_get_episodes = parser.get_episodes("one piece", limit=limit)
         for index, episode in enumerate(proper_get_episodes):
             episode.pop("title")
-            if episode != episodes[index]:
-                assert episode.keys() == episodes[index].keys()
-            assert episode == episodes[index]
+            proper = episode.keys()
+            non_proper = episodes[index].keys()
+            error_msg = f"proper: {proper} \nnon proper: {non_proper}"
+            assert episode == episodes[index], error_msg
 
 
 def test_get_batches():
