@@ -16,6 +16,7 @@ download_dir = ~/videos
 [subscriptions]
 """
 
+
 @patch("builtins.open", mock_open(read_data=data))
 @patch("os.makedirs", return_value=True)
 def test_config_manager(mock_os_makedirs):
@@ -31,7 +32,5 @@ def test_config_manager(mock_os_makedirs):
     assert dict(config.subscriptions) == {}
 
     # test writing abilities
-    config.conf["subscriptions"]["test"] = "0"
-    with open("not a config lol", "w") as file:
-        config.conf.write(file)
+    config.add_entry("test", "0")
     assert dict(config.subscriptions) == {"test": "0"}
