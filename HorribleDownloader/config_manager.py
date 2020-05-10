@@ -26,9 +26,13 @@ class ConfigManager:
         if entry in self.subscriptions:
             return False, title
 
+        self.update_entry(title, episode)
+        return True, title
+
+    def update_entry(self, title, episode):
+        entry = title.lower()
         self.subscriptions[entry] = episode
         self.write()
-        return True, title
 
     def write(self):
         # update the local file
