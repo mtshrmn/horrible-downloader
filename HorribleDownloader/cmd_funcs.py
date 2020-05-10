@@ -1,3 +1,5 @@
+import os
+from subprocess import call
 from typing import List
 
 try:
@@ -32,6 +34,15 @@ except ImportError:
         if first_char == b'\xe0':
             return {"H": "up", "P": "down"}[getch().decode("UTF-8")]
         return first_char.decode("UTF-8")
+
+if os.name == "nt":
+    # windows
+    def clear():
+        os.system("cls")
+else:
+    # linux or osx
+    def clear():
+        os.system("clear")
 
 
 def valid_qualities(qualities: List[str]) -> bool:
@@ -72,3 +83,10 @@ def episode_filter(episode: str, ep_filter: str) -> bool:
                 return True
     # if none passes the test, return False
     return False
+
+
+def download(episode, qualities, path):
+    subdir = os.path.join(path, episode["title"].title())
+    for quality in qualities:
+        call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"",
+             shell=True)
