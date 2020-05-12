@@ -67,7 +67,7 @@ class Parser:
         # the end string is different for regular episodes and for batches
         show_stop_text = "DONE"
         batch_stop_text = "There are no batches for this show yet"
-        stop_text = show_stop_text if type == "show" else batch_stop_text
+        stop_text = show_stop_text if show_type == "show" else batch_stop_text
         query = {
             "method": "getshows",
             "showid": showid,
