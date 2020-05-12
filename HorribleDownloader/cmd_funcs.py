@@ -86,7 +86,7 @@ def episode_filter(episode: str, ep_filter: str) -> bool:
 
 
 def download(episode, qualities, path):
-    subdir = os.path.join(path, episode["title"].title())
+    subdir = os.path.join(os.path.expanduser(path), episode["title"].title())
     for quality in qualities:
         call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"",
              shell=True)
