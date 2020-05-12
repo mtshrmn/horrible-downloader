@@ -24,7 +24,9 @@ class Parser:
             return ""
         return proper_title
 
-    def get_episodes(self, show: str, limit=1000) -> list:
+    def get_episodes(self, show: str, limit=1000, batches=False) -> list:
+        if batches:
+            return self.get_batches(show, limit=limit)
         return self._get_uris(show, "show", limit)
 
     def get_batches(self, show: str, limit=1000) -> list:
