@@ -2,7 +2,6 @@
 import os
 import sys
 import argparse
-import subprocess
 from multiprocessing import Manager, Lock, Process
 from sty import fg
 
