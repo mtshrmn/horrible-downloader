@@ -1,6 +1,8 @@
 import os
 from subprocess import call
 from typing import List
+from sty import fg
+
 
 try:
     # POSIX system: Create and return a getch that manipulates the tty
@@ -90,3 +92,30 @@ def download(episode, qualities, path):
     for quality in qualities:
         call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"",
              shell=True)
+
+
+def fetch_episodes(show_entry, shared_dict, lock, parser, batches):
+    show_title, last_watched = show_entry
+    proper_show_title = parser.get_proper_title(show_title)
+    if batches:
+        batches = parser.get_batches(show_title)
+        shared_dict[proper_show_title] = batches[0]
+    else:
+        episodes = parser.get_episodes(show_title)
+        def should_download(episode):
+            return float(episode["episode"]) > float(last_watched)
+        filtered_episodes = list(filter(should_download, episodes))
+        shared_dict[proper_show_title] = filtered_episodes
+
+    with lock:
+        clear()
+        shows = shared_dict.items()
+        for title, episodes in shows:
+            dots = "." * (50 - len(title))
+            if episodes:
+                found_str = f"FOUND ({len(episodes)})"
+                print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}{found_str}{fg.rs}")
+            elif episodes == []:
+                print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+            else:
+                print(f"{fg(3)}FETCHING:{fg.rs} {title}")

@@ -8,34 +8,12 @@ from sty import fg
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from HorribleDownloader import Parser, ConfigManager
-from cmd_funcs import valid_qualities, episode_filter, download, clear
-
-
-def fetch_episodes(show_entry, shared_dict, lock, parser, batches):
-    show_title, last_watched = show_entry
-
-    if batches:
-        batches = parser.get_batches(show_title)
-        shared_dict[show_title] = batches[0]
-    else:
-        episodes = parser.get_episodes(show_title)
-        def should_download(episode):
-            return float(episode["episode"]) > float(last_watched)
-        filtered_episodes = list(filter(should_download, episodes))
-        shared_dict[show_title] = filtered_episodes
-
-    with lock:
-        clear()
-        shows = shared_dict.items()
-        for title, episodes in shows:
-            dots = "." * (50 - len(title))
-            if episodes:
-                found_str = f"FOUND ({len(episodes)})"
-                print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}{found_str}{fg.rs}")
-            elif episodes == []:
-                print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
-            else:
-                print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+from cmd_funcs import (
+    valid_qualities,
+    episode_filter,
+    download,
+    clear,
+    fetch_episodes)
 
 
 if __name__ == "__main__":
