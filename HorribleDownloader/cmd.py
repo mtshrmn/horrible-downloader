@@ -99,7 +99,8 @@ if __name__ == "__main__":
 
     if args.download:
         title = parser.get_proper_title(args.download)
-        print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+        if not args.quiet:
+            print(f"{fg(3)}FETCHING:{fg.rs} {title}")
         episodes = parser.get_episodes(args.download, batches=args.batch)
         def should_download(episode):
             if not args.episodes:
@@ -107,22 +108,23 @@ if __name__ == "__main__":
             return episode_filter(float(episode["episode"]), args.episodes)
 
         filtered_episodes = list(filter(should_download, episodes))
-        clear()
-        dots = "." * (50 - len(title))
-        found_str = f"FOUND ({len(filtered_episodes)})"
-        print(f"{fg(3)}FETCHING: {fg.rs}{title}{dots}{fg(10)}{found_str}{fg.rs}")
+        if not args.quiet:
+            clear()
+            dots = "." * (50 - len(title))
+            found_str = f"FOUND ({len(filtered_episodes)})"
+            print(f"{fg(3)}FETCHING: {fg.rs}{title}{dots}{fg(10)}{found_str}{fg.rs}")
 
-        episodes_len = len(filtered_episodes) * len(qualities)
-        print(f'{fg(2)}\nFound {episodes_len} file{"s" if episodes_len > 1 else ""} to download:\n{fg.rs}')
-        for episode in filtered_episodes:
-            for quality in qualities:
-                print(f'{title} - {episode["episode"]} [{quality}p].mkv')
+            episodes_len = len(filtered_episodes) * len(qualities)
+            print(f'{fg(2)}\nFound {episodes_len} file{"s" if episodes_len > 1 else ""} to download:\n{fg.rs}')
+            for episode in filtered_episodes:
+                for quality in qualities:
+                    print(f'{title} - {episode["episode"]} [{quality}p].mkv')
 
-        if not args.noconfirm:
-            inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
-            if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
-                print(fg(1) + 'aborting download\n' + fg.rs)
-                exit(1)
+            if not args.noconfirm and not args.quiet:
+                inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
+                if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
+                    print(fg(1) + 'aborting download\n' + fg.rs)
+                    exit(1)
 
         for episode in filtered_episodes:
             download(episode, qualities, config.download_dir)
@@ -137,14 +139,15 @@ if __name__ == "__main__":
     procs = []
     method = "batches" if args.batch else "show"
 
-    clear()
-    for title in initial_downloads_dict.keys():
-        print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+    if not args.quiet:
+        clear()
+        for title in initial_downloads_dict.keys():
+            print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
     for entry in config.subscriptions.items():
         proc = Process(
             target=fetch_episodes,
-            args=(entry, downloads, printing_lock, parser, args.batch)
+            args=(entry, downloads, printing_lock, parser, args.batch, args.quiet)
         )
         proc.start()
         procs.append(proc)
@@ -158,19 +161,22 @@ if __name__ == "__main__":
             downloads_list.append(episode)
 
     if downloads_list == []:
-        print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
+        if not args.quiet:
+            print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
         logging.info("No new episodes were found. Exiting ")
         exit(0)
 
     logging.info("found the following files:")
-    episodes_len = len(downloads_list) * len(qualities)
-    print(f'{fg(2)}\nFound {episodes_len} file{"s" if episodes_len > 1 else ""} to download:\n{fg.rs}')
+    if not args.quiet:
+        episodes_len = len(downloads_list) * len(qualities)
+        print(f'{fg(2)}\nFound {episodes_len} file{"s" if episodes_len > 1 else ""} to download:\n{fg.rs}')
     for episode in downloads_list:
         for quality in qualities:
-            print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+            if not args.quiet:
+                print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
             logging.info(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
 
-    if not args.noconfirm:
+    if not args.noconfirm and not args.quiet:
         inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
         if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
             print(fg(1) + 'aborting download\n' + fg.rs)

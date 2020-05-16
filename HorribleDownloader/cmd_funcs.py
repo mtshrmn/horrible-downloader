@@ -94,7 +94,7 @@ def download(episode, qualities, path):
              shell=True)
 
 
-def fetch_episodes(show_entry, shared_dict, lock, parser, batches):
+def fetch_episodes(show_entry, shared_dict, lock, parser, batches, quiet):
     show_title, last_watched = show_entry
     proper_show_title = parser.get_proper_title(show_title)
     if batches:
@@ -106,16 +106,16 @@ def fetch_episodes(show_entry, shared_dict, lock, parser, batches):
             return float(episode["episode"]) > float(last_watched)
         filtered_episodes = list(filter(should_download, episodes))
         shared_dict[proper_show_title] = filtered_episodes
-
-    with lock:
-        clear()
-        shows = shared_dict.items()
-        for title, episodes in shows:
-            dots = "." * (50 - len(title))
-            if episodes:
-                found_str = f"FOUND ({len(episodes)})"
-                print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}{found_str}{fg.rs}")
-            elif episodes == []:
-                print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
-            else:
-                print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+    if not quiet:
+        with lock:
+            clear()
+            shows = shared_dict.items()
+            for title, episodes in shows:
+                dots = "." * (50 - len(title))
+                if episodes:
+                    found_str = f"FOUND ({len(episodes)})"
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}{found_str}{fg.rs}")
+                elif episodes == []:
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+                else:
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}")
