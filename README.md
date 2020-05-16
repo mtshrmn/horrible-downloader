@@ -1,4 +1,4 @@
-# Horrible Downloader    [![Build Status](https://travis-ci.org/Jelomite/horrible-downloader.svg?branch=master)](https://travis-ci.org/Jelomite/horrible-downloader) [![PyPI version](https://badge.fury.io/py/horrible-downloader.svg)](https://badge.fury.io/py/horrible-downloader)
+# Horrible Downloader    [![Build Status](https://travis-ci.org/Jelomite/horrible-downloader.svg?branch=master)](https://travis-ci.org/Jelomite/horrible-downloader) [![codecov](https://codecov.io/gh/Jelomite/horrible-downloader/branch/master/graph/badge.svg)](https://codecov.io/gh/Jelomite/horrible-downloader)  [![PyPI version](https://badge.fury.io/py/horrible-downloader.svg)](https://badge.fury.io/py/horrible-downloader)
 
 ![horrible subs banner](https://i.imgur.com/jWulipo.png)
 
