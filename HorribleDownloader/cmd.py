@@ -2,6 +2,7 @@
 import os
 import sys
 import argparse
+import logging
 from multiprocessing import Manager, Lock, Process
 from sty import fg
 
@@ -15,6 +16,27 @@ from cmd_funcs import (
     clear,
     fetch_episodes)
 
+
+class StreamToLogger:
+   def __init__(self, logger, log_level=logging.INFO):
+      self.logger = logger
+      self.log_level = log_level
+      self.linebuf = ''
+
+   def write(self, buf):
+      for line in buf.rstrip().splitlines():
+         self.logger.log(self.log_level, line.rstrip())
+
+logging.basicConfig(
+    level=logging.INFO,
+    filename="horribledownloader.log",
+    filemode="w",
+    format="[%(levelname)s]: %(message)s"
+)
+
+stderr_logger = logging.getLogger('STDERR')
+logger = StreamToLogger(stderr_logger, logging.ERROR)
+sys.stderr = logger
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description="horrible script for downloading anime")
@@ -98,7 +120,7 @@ if __name__ == "__main__":
 
 
     manager = Manager()
-    initial_downloads_dict = {title: None for title in config.subscriptions.keys()}
+    initial_downloads_dict = {parser.get_proper_title(title): None for title in config.subscriptions.keys()}
     downloads = manager.dict(initial_downloads_dict)
     printing_lock = Lock()
     procs = []
@@ -106,8 +128,7 @@ if __name__ == "__main__":
 
     clear()
     for title in initial_downloads_dict.keys():
-        proper_title = parser.get_proper_title(title)
-        print(f"{fg(3)}FETCHING:{fg.rs} {proper_title}")
+        print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
     for entry in config.subscriptions.items():
         proc = Process(
