@@ -7,3 +7,4 @@ horrible_downloader.egg-info/
 dist/
 htmlcov/
 .coverage
+*.log
