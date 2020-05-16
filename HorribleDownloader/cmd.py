@@ -148,22 +148,27 @@ if __name__ == "__main__":
 
     if downloads_list == []:
         print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
+        logging.info("No new episodes were found. Exiting ")
         exit(0)
 
+    logging.info("found the following files:")
     episodes_len = len(downloads_list) * len(qualities)
     print(f'{fg(2)}\nFound {episodes_len} file{"s" if episodes_len > 1 else ""} to download:\n{fg.rs}')
     for episode in downloads_list:
         for quality in qualities:
             print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+            logging.info(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
 
     if not args.noconfirm:
         inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
         if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
             print(fg(1) + 'aborting download\n' + fg.rs)
+            logging.info("user has aboorted the download")
             exit(1)
 
 
     for episode in downloads_list:
         download(episode, qualities, config.download_dir)
         config.update_entry(episode["title"], episode["episode"])
+        logging.info(f'updated entry: {episode["title"]} - {episode["episode"]}')
     exit(0)
