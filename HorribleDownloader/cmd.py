@@ -49,11 +49,22 @@ if __name__ == "__main__":
     argparser.add_argument("--batch", help="search for batches as well as regular files", action="store_true")
     argparser.add_argument("-q", "--quiet", help="set quiet mode on", action="store_true")
     argparser.add_argument("-lc", "--list-current", help="list all currently airing shows", action="store_true")
+    argparser.add_argument("-c", "--config", help="config file location", type=str)
     argparser.add_argument("--noconfirm", help="Bypass any and all “Are you sure?” messages.", action="store_true")
     args = argparser.parse_args()
 
     clear()
-    config = ConfigManager()
+
+    if not args.config:
+        config = ConfigManager()
+    else:
+        path, file = os.path.split(args.config)
+        if file:
+            config = ConfigManager(conf_dir=path, file=file)
+        elif path:
+            config = ConfigManager(conf_dir=path)
+        else:
+            config = ConfigManager()
     parser = Parser()
 
     if args.subscribe:
