@@ -129,7 +129,8 @@ if __name__ == "__main__":
 
     clear()
     for title in initial_downloads_dict.keys():
-        print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+        proper_title = parser.get_proper_title(title)
+        print(f"{fg(3)}FETCHING:{fg.rs} {proper_title}")
 
     for entry in config.subscriptions.items():
         proc = Process(
