@@ -32,7 +32,7 @@ setup(
         'rapidfuzz>=0.7.8',
     ],
     entry_points={
-        "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:cli"]
+        "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:main"]
     },
     include_package_data=True,
     zip_safe=False,
