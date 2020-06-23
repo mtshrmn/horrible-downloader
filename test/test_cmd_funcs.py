@@ -5,7 +5,7 @@ from itertools import combinations
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from HorribleDownloader.cmd_funcs import valid_qualities, episode_filter
+from HorribleDownloader.cmd import valid_qualities, episode_filter
 
 
 def test_quality_verification():
