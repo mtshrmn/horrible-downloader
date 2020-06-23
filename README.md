@@ -1,4 +1,4 @@
-# Horrible Downloader    [![Build Status](https://travis-ci.org/Jelomite/horrible-downloader.svg?branch=master)](https://travis-ci.org/Jelomite/horrible-downloader) [![codecov](https://codecov.io/gh/Jelomite/horrible-downloader/branch/master/graph/badge.svg)](https://codecov.io/gh/Jelomite/horrible-downloader)  [![PyPI version](https://badge.fury.io/py/horrible-downloader.svg)](https://badge.fury.io/py/horrible-downloader)
+# Horrible Downloader    [![Build Status](https://travis-ci.com/mtshrmn/horrible-downloader.svg?branch=master)](https://travis-ci.com/mtshrmn/horrible-downloader) [![codecov](https://codecov.io/gh/mtshrmn/horrible-downloader/branch/master/graph/badge.svg)](https://codecov.io/gh/mtshrmn/horrible-downloader)  [![PyPI version](https://badge.fury.io/py/horrible-downloader.svg)](https://badge.fury.io/py/horrible-downloader)
 
 ![horrible subs banner](https://i.imgur.com/jWulipo.png)
 
@@ -43,7 +43,7 @@ The parser will allow us to fetch data from [horriblesubs](horriblesubs.info). h
 
 - **shows** - List all available shows. equivalent to https://horriblesubs.info/shows/.
 - **current_shows** - List all currently airing shows. equivalent to https://horriblesubs.info/current-season/.
-- **get_proper_title(title: str, min_threshold=0)** - Returns the exact title using fuzzy string matching. 
+- **get_proper_title(title: str, min_threshold=0)** - Returns the exact title using fuzzy string matching.
 - **get_episodes(show: str, limit=1000, batches=False)** - Returns a list of episodes from the specified show. By default will return the last 1000 episodes (of course, most shows don't even reach the 100th episode). If `batches` is set to true, it'll simply run as `get_batches` with the same arguments. The function works in reverse, this means the _limit_ argument goes from the latest episode until it reaches its limit (or it has reached the first episode). E.g:
 ``` python
 parser = Parser()
@@ -168,4 +168,4 @@ jojo's bizzare adventure - golden wind = 0
 #### Log File
 The CLI will output information into a file, this is useful when the output itself is inaccessible or if trying to retrieve error information when submitting a new issue.
 
-I have no idea where the log file is located across all of the different operating systems. 
+I have no idea where the log file is located across all of the different operating systems.
