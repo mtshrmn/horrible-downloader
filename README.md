@@ -1,4 +1,4 @@
-# Horrible Downloader    [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4a13ba5715f94427998e63968ea710d7)](https://app.codacy.com/app/Jelomite/horrible-downloader?utm_source=github.com&utm_medium=referral&utm_content=Jelomite/horrible-downloader&utm_campaign=Badge_Grade_Settings)   [![Build Status](https://travis-ci.org/Jelomite/horrible-downloader.svg?branch=master)](https://travis-ci.org/Jelomite/horrible-downloader) [![PyPI version](https://badge.fury.io/py/horrible-downloader.svg)](https://badge.fury.io/py/horrible-downloader)
+# Horrible Downloader    [![Build Status](https://travis-ci.com/mtshrmn/horrible-downloader.svg?branch=master)](https://travis-ci.com/mtshrmn/horrible-downloader) [![codecov](https://codecov.io/gh/mtshrmn/horrible-downloader/branch/master/graph/badge.svg)](https://codecov.io/gh/mtshrmn/horrible-downloader)  [![PyPI version](https://badge.fury.io/py/horrible-downloader.svg)](https://badge.fury.io/py/horrible-downloader)
 
 ![horrible subs banner](https://i.imgur.com/jWulipo.png)
 
@@ -43,7 +43,8 @@ The parser will allow us to fetch data from [horriblesubs](horriblesubs.info). h
 
 - **shows** - List all available shows. equivalent to https://horriblesubs.info/shows/.
 - **current_shows** - List all currently airing shows. equivalent to https://horriblesubs.info/current-season/.
-- **get_episodes(show: str, limit=1000)** - Returns a list of episodes from the specified show. By default will return the last 1000 episodes (of course, most shows don't even reach the 100th episode). The function works in reverse, this means the _limit_ argument goes from the latest episode until it reaches its limit (or it has reached the first episode). E.g:
+- **get_proper_title(title: str, min_threshold=0)** - Returns the exact title using fuzzy string matching.
+- **get_episodes(show: str, limit=1000, batches=False)** - Returns a list of episodes from the specified show. By default will return the last 1000 episodes (of course, most shows don't even reach the 100th episode). If `batches` is set to true, it'll simply run as `get_batches` with the same arguments. The function works in reverse, this means the _limit_ argument goes from the latest episode until it reaches its limit (or it has reached the first episode). E.g:
 ``` python
 parser = Parser()
 episodes = parser.get_episodes("one piece", limit=7)
@@ -106,7 +107,7 @@ Full list of flags and options:
 $ horrible-downloader --help
 usage: horrible-downloader [-h] [-d DOWNLOAD] [-o OUTPUT] [-e EPISODES] [-l]
                            [-r RESOLUTION] [---subscribe SUBSCRIBE] [--batch]
-                           [-q] [--noconfirm]
+                           [-q] [-lc] [-c CONFIG] [--noconfirm]
 
 horrible script for downloading anime
 
@@ -120,6 +121,7 @@ optional arguments:
   -r RESOLUTION, --resolution RESOLUTION     specify resolution quality, defaults to config file
   --subscribe SHOW [-e EPISODE]              add a show to the config file.
   --batch                                    search for batches as well as regular files
+  -c CONFIG, --config CONFIG                 config file location
   --noconfirm                                bypass any and all “Are you sure?” messages.
 ```
 ##### Episodes & Resolution Formating:
@@ -149,6 +151,8 @@ Once the script is called, the configuration file will be generated in the user'
 `~/.config/horrible-downloader/conf.ini`.
 By default, the config file contains all of the current airing anime commented out. To subscribe to an anime, simply uncomment it and specify which episode you're currently on.
 
+**NOTE:** The order of the shows in the config file will affect the order of downloading.
+
 ##### example config file:
 ```
 [settings]
@@ -160,3 +164,6 @@ one punch man = 11
 lupin iii part v = 8
 jojo's bizzare adventure - golden wind = 0
 ```
+
+#### Known Issues:
+When you use Ctrl+C to interrupt the fetching phase, it will not quit gracefully and will print the traceback of the error. I have no idea how to redirect it to the log file.

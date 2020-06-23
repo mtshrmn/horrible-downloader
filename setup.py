@@ -15,12 +15,12 @@ class custom_install(install):
 
 setup(
     name='horrible-downloader',
-    version='1.0.6',
+    version='1.1.0-rc1.1',
     packages=['HorribleDownloader'],
-    url='https://github.com/Jelomite/horrible-downloader',
+    url='https://github.com/mtshrmn/horrible-downloader',
     license='MIT',
     author='Jelomite',
-    author_email='moshesher1998@gmail.com',
+    author_email='mtshrmn@gmail.com',
     description='HorribleSubs API',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -32,7 +32,7 @@ setup(
         'rapidfuzz>=0.7.8',
     ],
     entry_points={
-        "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:cli"]
+        "console_scripts": ["horrible-downloader=HorribleDownloader.cmd:main"]
     },
     include_package_data=True,
     zip_safe=False,

@@ -1,376 +1,293 @@
 #!/usr/bin/env python
-
 import os
+import sys
 import argparse
-import subprocess
-from HorribleDownloader import Parser, ConfigManager
+import logging
+from subprocess import call
+from typing import List
+from multiprocessing import Manager, Lock, Process
 from sty import fg
-import multiprocessing
-from functools import partial
 
-def clear(): # function to clear the screan
-    os.system("cls" if os.name == "nt" else "clear")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-def subscribe_to(show, episode):
-    """
-    subscribe to a show at and set progress to specified episodes
-    :param show: the search term for the name of the show, it can be an approximation
-    :param episode: the initial episode to set the show. defaults to 0 (as if no episodes were watched).
-    :return: returns a tuple - first element indicates the success status, the second one is the exact name of the show.
-    """
-    config = ConfigManager()
-    title = Parser().get_episodes(show)[0]["title"]
-
-    if title.lower() in config.conf["subscriptions"]:
-        return False, title
-
-    config.conf["subscriptions"][title.lower()] = episode
-    with open(os.path.join(config.dir, config.file), "w") as f:
-        config.conf.write(f)
-
-    return True, title
-
-def verify_quality(qualities):
-    """
-    checks if quality is in a valid format (480, 720, 1080).
-    :param qualities: array of qualities
-    :return: true if format is right.
-    """
-    for quality in qualities:
-        if quality not in ["480", "720", "1080"]:
-            return False
-    return True
-
-def generate_episode_filter(episodes):
-    """
-    parse the episode specification string to generate a filter function.
-    read the docs for understanding the syntax.
-    :param episodes: the episode specification string
-    :return: filter function for the episodes
-    """
-    # if no episodes where specified - the generated filter should return false.
-    if not episodes:
-        def default_filter():
-            return False
-        return default_filter
-
-    tests = []
-    for token in episodes.split(","):
-        # we have multiple options:
-        # N, N1-N2, =<N, <N, N>=, N>
-        # each of those options adds a test to a list.
-        # if one tests passes -> we keep the episode.
-        if token.replace('.', '', 1).isdigit():
-            tests.append(partial(lambda t, ep: ep == t, float(token)))
-
-        elif "-" in token:
-            numbers = token.split("-")
-            tests.append(partial(lambda n1, n2, ep: float(n1) <= ep <= float(n2), *numbers))
-
-        elif token.startswith("=<"):
-            tests.append(partial(lambda t, ep: ep <= t, float(token.lstrip("=<"))))
-
-        elif token.startswith("<"):
-            tests.append(partial(lambda t, ep: ep < t, float(token.lstrip("<"))))
-
-        elif token.endswith(">="):
-            tests.append(partial(lambda t, ep: ep >= t, float(token.rstrip(">="))))
-
-        elif token.endswith(">"):
-            tests.append(partial(lambda t, ep: ep > t, float(token.rstrip(">"))))
-
-        else:
-            raise RuntimeError("invalid query")
-
-    def generated_filter(ep):
-        return any([test(float(ep)) for test in tests])
-
-    return generated_filter
-
-def download(episode, qualities, path):
-    """
-    the actual download function
-    :param episode: episode object
-    :param qualities: the specified qualities
-    :param download_dir: absolute path to the directory for downloading the files
-    """
-    subdir = os.path.join(path, episode["title"].title())
-    for quality in qualities:
-        subprocess.call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"", shell=True)
-
-def fetch_episodes(parser, show, last_watched, shared_data, global_args, lock):
-    try:
-        # default values for
-        new = []
-        shared_data[show] = []
-        # print info if not quiet mode
-        if not global_args.quiet:
-            with lock:
-                titles = shared_data.keys()
-                clear()
-                for title in titles:
-                    print(f"{fg(3)}FETCHING:{fg.rs} {title}")
-
-        if global_args.batch:
-            new = parser.get_batches(show)
-            shared_data[show] = new[0]
-        else:
-            episodes = parser.get_episodes(show)
-            if global_args.episodes:
-                ep_filter = generate_episode_filter(global_args.episodes)
-                new = list(filter(lambda s: ep_filter(s["episode"]), episodes))
-            else:
-                new = list(filter(lambda s: float(s["episode"]) > float(last_watched), episodes))
-
-            shared_data[show] = new if new else None
-
-        # print the dots...
-        if not global_args.quiet:
-            with lock:
-                titles = shared_data.keys()
-                clear()
-                for title in titles:
-                    dots = "." * (50 - len(str(title)))
-                    if shared_data[title]:
-                        print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}FOUND ({str(len(shared_data[title]))}){fg.rs}")
-                    else:
-                        if shared_data[title] is None:
-                            print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
-                        else:
-                            print(f"{fg(3)}FETCHING:{fg.rs} {title}")
-    except KeyboardInterrupt:
-        pass
-
-def flatten_dict(dictionary):
-    # flatten a dictionary into a list.
-    # the transformation:
-    # {"key1": [val1, val2, ...], "key2": [val3, val4, ...], ...} -> [val1, val2, val3, val4, ...]
-    flat = []
-    for key in dictionary.keys():
-        value = dictionary[key]
-        if value:
-            if type(value) == list:
-                flat.extend(reversed(value))
-            elif type(value) == dict:
-                flat.extend([value])
-    return flat
-
-def reprint_results(data, qualities):
-    # resets console output until the state of re-arranging
-    titles = data.keys()
-    clear()
-    for title in titles:
-        dots = "." * (50 - len(str(title)))
-        if data[title]:
-            print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}FOUND ({str(len(data[title]))}){fg.rs}")
-        else:
-            print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
-
-    data_flat = flatten_dict(data)
-    print(f'{fg(2)}\nFound {len(data_flat)} {"files" if len(data_flat) > 1 else "file"} to download:\n{fg.rs}')
-    for episode in data_flat:
-        for quality in qualities:
-            print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+from HorribleDownloader import Parser, ConfigManager
 
 try:
     # POSIX system: Create and return a getch that manipulates the tty
     import termios
-    import sys, tty
+    import sys
+    import tty
+
+    # immitate Windows' msvcrt.getch
     def getch():
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(fd)
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-            return ch
+        file_descriptor = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(file_descriptor)
+        tty.setraw(file_descriptor)
+        ch = sys.stdin.read(1)
+        termios.tcsetattr(file_descriptor, termios.TCSADRAIN, old_settings)
+        return ch
 
     # Read arrow keys correctly
-    def getKey():
-        firstChar = getch()
-        if firstChar == '\x1b':
+    def get_key():
+        first_char = getch()
+        if first_char == '\x1b':
             return {"[A": "up", "[B": "down"}[getch() + getch()]
-        else:
-            return firstChar
+        return first_char
 
 except ImportError:
     # Non-POSIX: Return msvcrt's (Windows') getch
     from msvcrt import getch
 
     # Read arrow keys correctly
-    def getKey():
-        firstChar = getch()
-        if firstChar == b'\xe0':
+    def get_key():
+        first_char = getch()
+        if first_char == b'\xe0':
             return {"H": "up", "P": "down"}[getch().decode("UTF-8")]
-        else:
-            return firstChar.decode("UTF-8")
+        return first_char.decode("UTF-8")
 
-def main(args):
+if os.name == "nt":
+    # windows
+    def clear():
+        os.system("cls")
+else:
+    # linux or osx
+    def clear():
+        os.system("clear")
+
+
+def valid_qualities(qualities: List[str]) -> bool:
+    for quality in qualities:
+        if quality not in ["480", "720", "1080"]:
+            return False
+    return True
+
+
+def episode_filter(episode: str, ep_filter: str) -> bool:
+    # in charge of parsing the episode flag
+    # to better understand this, read the documentation
+    for token in ep_filter.split(","):
+        # if it's a float (N)
+        if token.replace('.', '', 1).isdigit():
+            if float(token) == episode:
+                return True
+        # if it's a range (N1-N2)
+        elif "-" in token:
+            lower, higher = token.split("-")
+            if float(lower) <= episode <= float(higher):
+                return True
+        # if it's smaller or equal to (=<N)
+        elif token.startswith("=<"):
+            if episode <= float(token.lstrip("=<")):
+                return True
+        # if it's smaller than (<N)
+        elif token.startswith("<"):
+            if episode < float(token.lstrip("<")):
+                return True
+        # if it's bigger or equal to (N>=)
+        elif token.endswith(">="):
+            if episode >= float(token.rstrip(">=")):
+                return True
+        # if it's bigger than (N>)
+        elif token.endswith(">"):
+            if episode > float(token.rstrip(">")):
+                return True
+    # if none passes the test, return False
+    return False
+
+
+def download(episode, qualities, path):
+    subdir = os.path.join(os.path.expanduser(path), episode["title"].title())
+    for quality in qualities:
+        call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"",
+             shell=True)
+
+
+def fetch_episodes(show_entry, shared_dict, lock, parser, batches, quiet):
+    show_title, last_watched = show_entry
+    proper_show_title = parser.get_proper_title(show_title)
+    if batches:
+        batches = parser.get_batches(show_title)
+        shared_dict[proper_show_title] = batches[0]
+    else:
+        episodes = parser.get_episodes(show_title)
+        def should_download(episode):
+            return float(episode["episode"]) > float(last_watched)
+        filtered_episodes = list(filter(should_download, episodes))
+        shared_dict[proper_show_title] = filtered_episodes
+    if not quiet:
+        with lock:
+            clear()
+            shows = shared_dict.items()
+            for title, episodes in shows:
+                dots = "." * (50 - len(title))
+                if episodes:
+                    found_str = f"FOUND ({len(episodes)})"
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(10)}{found_str}{fg.rs}")
+                elif episodes == []:
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}{dots} {fg(8)}NONE{fg.rs}")
+                else:
+                    print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+
+logging.basicConfig(
+    level=logging.INFO,
+    filename="horribledownloader.log",
+    filemode="w",
+    format="[%(levelname)s]: %(message)s"
+)
+
+def main():
+    argparser = argparse.ArgumentParser(description="horrible script for downloading anime")
+    argparser.add_argument("-d", "--download", help="download a specific anime", type=str)
+    argparser.add_argument("-o", "--output", help="directory to which it will download the files", type=str)
+    argparser.add_argument("-e", "--episodes", help="specify specific episodes to download", type=str)
+    argparser.add_argument("-l", "--list", help="display list of available episodes", action="store_true")
+    argparser.add_argument("-r", "--resolution", help="specify resolution quality", type=str)
+    argparser.add_argument("--subscribe", help="add a show to the config file", type=str)
+    argparser.add_argument("--batch", help="search for batches as well as regular files", action="store_true")
+    argparser.add_argument("-q", "--quiet", help="set quiet mode on", action="store_true")
+    argparser.add_argument("-lc", "--list-current", help="list all currently airing shows", action="store_true")
+    argparser.add_argument("-c", "--config", help="config file location", type=str)
+    argparser.add_argument("--noconfirm", help="Bypass any and all “Are you sure?” messages.", action="store_true")
+    args = argparser.parse_args()
+
+    logger = logging.getLogger("info")
+
     clear()
-    CONFIG = ConfigManager()
-    PARSER = Parser()
-    # change to custom download dir if user has specified
-    if args.output:
-        CONFIG.download_dir = args.output
 
-    QUALITIES = (CONFIG.quality if not args.resolution else args.resolution).split(",")
-    # validating qualities object to fit format:
-    if not verify_quality(QUALITIES):
+    if not args.config:
+        config = ConfigManager()
+    else:
+        path, file = os.path.split(args.config)
+        if file:
+            config = ConfigManager(conf_dir=path, file=file)
+        elif path:
+            config = ConfigManager(conf_dir=path)
+        else:
+            config = ConfigManager()
+    parser = Parser()
+
+    if args.subscribe:
+        episode_number = args.episodes if args.episodes else "0"
+        title = parser.get_proper_title(args.subscribe)
+        success, show = config.add_entry(title, episode_number)
+        if success:
+            print(f"Successfully subscribed to: \"{show.lower()}\"")
+            print(f"Latest watched episode is - {episode_number}")
+        else:
+            print(f"You're already subscribed to \"{show}\", omitting changes...")
+        exit(0)
+
+    if args.list:
+        print("\n".join(parser.shows.keys()))
+        exit(0)
+
+    if args.list_current:
+        print("\n".join(parser.current_shows.keys()))
+        exit(0)
+
+    if args.output:
+        config.download_dir = args.output
+
+    if args.resolution:
+        config.quality = args.resolution
+
+    qualities = config.quality.split(",")
+    if not valid_qualities(qualities):
         print("Bad resolution specified, aborting...")
         exit(1)
 
-    downloads = []
-    if args.download: # we want to set the correct title
-        title = Parser().get_episodes(args.download)[0]["title"]
+    if args.download:
+        title = parser.get_proper_title(args.download)
+        if not args.quiet:
+            print(f"{fg(3)}FETCHING:{fg.rs} {title}")
+        episodes = parser.get_episodes(args.download, batches=args.batch)
+        def should_download(episode):
+            if not args.episodes:
+                return True
+            return episode_filter(float(episode["episode"]), args.episodes)
 
-    downloads = multiprocessing.Manager().dict()
+        filtered_episodes = list(filter(should_download, episodes))
+        if not args.quiet:
+            clear()
+            dots = "." * (50 - len(title))
+            found_str = f"FOUND ({len(filtered_episodes)})"
+            print(f"{fg(3)}FETCHING: {fg.rs}{title}{dots}{fg(10)}{found_str}{fg.rs}")
+
+            episodes_len = len(filtered_episodes) * len(qualities)
+            print(f'{fg(2)}\nFound {episodes_len} file{"s" if episodes_len > 1 else ""} to download:\n{fg.rs}')
+            for episode in filtered_episodes:
+                for quality in qualities:
+                    print(f'{title} - {episode["episode"]} [{quality}p].mkv')
+
+            if not args.noconfirm and not args.quiet:
+                inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
+                if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
+                    print(fg(1) + 'aborting download\n' + fg.rs)
+                    exit(1)
+
+        for episode in filtered_episodes:
+            download(episode, qualities, config.download_dir)
+            config.update_entry(title, episode["episode"])
+        exit(0)
+
+
+    manager = Manager()
+    initial_downloads_dict = {parser.get_proper_title(title): None for title in config.subscriptions.keys()}
+    downloads = manager.dict(initial_downloads_dict)
+    printing_lock = Lock()
     procs = []
-    l = multiprocessing.Lock()
+    method = "batches" if args.batch else "show"
 
-    # all the variables set, lets start with the iterations:
-    for show, last_watched in [(title, 0)] if args.download else CONFIG.subscriptions:
-        proc = multiprocessing.Process(
-        target=fetch_episodes,
-        args=(PARSER, show, last_watched, downloads, args, l))
+    if not args.quiet:
+        clear()
+        for title in initial_downloads_dict.keys():
+            print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
+    for entry in config.subscriptions.items():
+        proc = Process(
+            target=fetch_episodes,
+            args=(entry, downloads, printing_lock, parser, args.batch, args.quiet)
+        )
         proc.start()
         procs.append(proc)
 
     for proc in procs:
         proc.join()
 
-    downloads_flat = flatten_dict(downloads)
+    downloads_list = []
+    for episodes in downloads.values():
+        for episode in episodes:
+            downloads_list.append(episode)
 
-    # after we iterated on all of the shows we have a list of stuff to download.
-    # but first we must check the list if it contains data:
-    if not downloads_flat:
-        if args.download: # we want to display a different message in each case.
-            print(fg(1) + "Couldn't find specified anime. Exiting" + fg.rs)
-        else:
+    if downloads_list == []:
+        if not args.quiet:
             print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
-        exit(1) # arguably should be exit code 0
-    if args.noconfirm:
-        inp = ""
-    else:
-        # summerizing info about the download
-        reprint_results(downloads, QUALITIES)
-        inp = input(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}')
+        logger.info("No new episodes were found. Exiting ")
+        exit(0)
 
-    if inp is "": # continue as usually.
-        pass
+    logger.info("found the following files:")
+    if not args.quiet:
+        episodes_len = len(downloads_list) * len(qualities)
+        print(f'{fg(2)}\nFound {episodes_len} file{"s" if episodes_len > 1 else ""} to download:\n{fg.rs}')
+    for episode in downloads_list:
+        for quality in qualities:
+            if not args.quiet:
+                print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+            logger.info(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
 
-    elif inp in ("Y", "y", "yes", "Yes"): # do the re-arrangment
-        print("press SPACE to toggle select a show, use UP/DOWN to arrange, when done - press RETURN")
+    if not args.noconfirm and not args.quiet:
+        inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
+        if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
+            print(fg(1) + 'aborting download\n' + fg.rs)
+            logger.info("user has aboorted the download")
+            exit(1)
 
-        # set some helpful variables
-        shows_download_keys = downloads.keys()
-        current_index = 0
-        selected = False
 
-        while True:
-            # printing all of the info from before, to reset the new data
-            reprint_results(downloads, QUALITIES)
-            print(f'{fg(3)}\nwould you like to re-arrange the downloads? (Return for default) {fg.rs}', inp)
-            print("press SPACE to toggle select a show, use UP/DOWN to arrange, when done - press RETURN")
-            for i, show in enumerate(shows_download_keys): # here we set the colors of the new data
-                if i == current_index:
-                    if selected:
-                        print(f"{fg(12)}{i+1}. {show}{fg.rs}")
-                    else:
-                        print(f"{fg(3)}{i+1}. {fg.rs}{show}")
-                else:
-                    print(f"{i+1}. {show}")
-
-            keypress = getKey()
-            if keypress == " ": # SPACE
-                selected = not selected
-
-            elif keypress in ("up", "down"): # ARROWS (ANY)
-                # this has to be done no matter which arrow key is pressed:
-                if selected:
-                    removed = shows_download_keys.pop(current_index)
-
-                # this is how it works to detect the individual arrows.
-                # https://www.daniweb.com/posts/jump/1087957
-                if keypress == "up": # UP
-                    if current_index > 0:
-                        current_index -= 1
-
-                elif keypress == "down": # DOWN
-                    if current_index < len(shows_download_keys) - (0 if selected else 1):
-                        current_index += 1
-
-                # once we know what key was pressed, we need to return the value we removed
-                if selected:
-                    shows_download_keys.insert(current_index, removed)
-
-            elif keypress == "\r": # RETURN
-                for show in shows_download_keys:
-                    downloads[show] = downloads.pop(show)
-
-                downloads_flat = flatten_dict(downloads)
-                print(f"{fg(3)}The download order will be as follows:{fg.rs}\n")
-                for episode in downloads_flat:
-                    for quality in QUALITIES:
-                        print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
-                break
-
-    else:
-        print(fg(1) + 'aborting download\n' + fg.rs)
-        exit(1)
-
-    #l et the downloads begin!
-    abs_path = os.path.expanduser(CONFIG.download_dir)
-    for episode_obj in downloads_flat:
-        download(episode_obj, QUALITIES, abs_path)
-
-        if not args.download:
-            CONFIG.conf["subscriptions"][episode_obj["title"].lower()] = episode_obj["episode"].lstrip("0")
-            with open(os.path.join(CONFIG.dir, CONFIG.file), "w") as f:
-                CONFIG.conf.write(f)
-
-def cli():
-    try:
-        parser = argparse.ArgumentParser(description='horrible script for downloading anime')
-        parser.add_argument('-d', '--download', help="download a specific anime", type=str)
-        parser.add_argument('-o', '--output', help="directory to which it will download the files", type=str)
-        parser.add_argument('-e', '--episodes', help="specify specific episodes to download", type=str)
-        parser.add_argument('-l', '--list', help="display list of available episodes", action="store_true")
-        parser.add_argument('-r', '--resolution', help="specify resolution quality", type=str)
-        parser.add_argument('--subscribe', help="add a show to the config file", type=str)
-        parser.add_argument('--batch', help="search for batches as well as regular files", action="store_true")
-        parser.add_argument('-q', '--quiet', help="set quiet mode on", action="store_true")
-        parser.add_argument('-lc', '--list-current', help="list all currently airing shows", action="store_true")
-        parser.add_argument('--noconfirm', help="Bypass any and all “Are you sure?” messages.", action="store_true")
-        args = parser.parse_args()
-
-        if args.subscribe:
-            episode_number = args.episodes if args.episodes else "0"
-            status, show = subscribe_to(args.subscribe, episode_number)
-
-            if status:
-                print(f"Successfully subscribed to: \"{show.lower()}\"")
-                print(f"Latest watched episode is - {episode_number}")
-            else:
-                print(f"You're already subscribed to \"{show}\", omitting changes...")
-            exit(0)
-
-        if args.list:
-            shows = list(Parser().shows.keys())
-            print("\n".join(shows))
-            exit(0)
-
-        if args.list_current:
-            shows = list(Parser().current_shows)
-            print("\n".join(shows))
-            exit(0)
-
-        main(args)
-
-    except KeyboardInterrupt:
-        print(f"{fg(1)}\nAborting download...{fg.rs}")
-
+    for episode in downloads_list:
+        download(episode, qualities, config.download_dir)
+        config.update_entry(episode["title"], episode["episode"])
+        logger.info(f'updated entry: {episode["title"]} - {episode["episode"]}')
+    exit(0)
 
 if __name__ == "__main__":
-    cli()
+    main()
