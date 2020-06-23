@@ -165,7 +165,5 @@ lupin iii part v = 8
 jojo's bizzare adventure - golden wind = 0
 ```
 
-#### Log File
-The CLI will output information into a file, this is useful when the output itself is inaccessible or if trying to retrieve error information when submitting a new issue.
-
-I have no idea where the log file is located across all of the different operating systems.
+#### Known Issues:
+When you use Ctrl+C to interrupt the fetching phase, it will not quit gracefully and will print the traceback of the error. I have no idea how to redirect it to the log file.
