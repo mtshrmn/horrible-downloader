@@ -128,28 +128,12 @@ def fetch_episodes(show_entry, shared_dict, lock, parser, batches, quiet):
                 else:
                     print(f"{fg(3)}FETCHING:{fg.rs} {title}")
 
-
-
-class StreamToLogger:
-   def __init__(self, logger, log_level=logging.INFO):
-      self.logger = logger
-      self.log_level = log_level
-      self.linebuf = ''
-
-   def write(self, buf):
-      for line in buf.rstrip().splitlines():
-         self.logger.log(self.log_level, line.rstrip())
-
 logging.basicConfig(
     level=logging.INFO,
     filename="horribledownloader.log",
     filemode="w",
     format="[%(levelname)s]: %(message)s"
 )
-
-stderr_logger = logging.getLogger('STDERR')
-logger = StreamToLogger(stderr_logger, logging.ERROR)
-sys.stderr = logger
 
 def main():
     argparser = argparse.ArgumentParser(description="horrible script for downloading anime")
@@ -165,6 +149,8 @@ def main():
     argparser.add_argument("-c", "--config", help="config file location", type=str)
     argparser.add_argument("--noconfirm", help="Bypass any and all “Are you sure?” messages.", action="store_true")
     args = argparser.parse_args()
+
+    logger = logging.getLogger("info")
 
     clear()
 
@@ -276,10 +262,10 @@ def main():
     if downloads_list == []:
         if not args.quiet:
             print(fg(1) + 'No new episodes were found. Exiting ' + fg.rs)
-        logging.info("No new episodes were found. Exiting ")
+        logger.info("No new episodes were found. Exiting ")
         exit(0)
 
-    logging.info("found the following files:")
+    logger.info("found the following files:")
     if not args.quiet:
         episodes_len = len(downloads_list) * len(qualities)
         print(f'{fg(2)}\nFound {episodes_len} file{"s" if episodes_len > 1 else ""} to download:\n{fg.rs}')
@@ -287,20 +273,20 @@ def main():
         for quality in qualities:
             if not args.quiet:
                 print(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
-            logging.info(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
+            logger.info(f'{episode["title"]} - {episode["episode"]} [{quality}p].mkv')
 
     if not args.noconfirm and not args.quiet:
         inp = input(f'{fg(3)}\nwould you like to proceed? [Y/n] {fg.rs}')
         if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
             print(fg(1) + 'aborting download\n' + fg.rs)
-            logging.info("user has aboorted the download")
+            logger.info("user has aboorted the download")
             exit(1)
 
 
     for episode in downloads_list:
         download(episode, qualities, config.download_dir)
         config.update_entry(episode["title"], episode["episode"])
-        logging.info(f'updated entry: {episode["title"]} - {episode["episode"]}')
+        logger.info(f'updated entry: {episode["title"]} - {episode["episode"]}')
     exit(0)
 
 if __name__ == "__main__":
