@@ -23,17 +23,13 @@ The dependency is automatically downloaded with the installation script, but for
 #### Usage
 example usage of the API inside of Python:
 ```python
-from HorribleDownloader import Parser, ConfigManager
+from HorribleDownloader import Parser
+from subprocess import call
 
-p = Parser()
-config = ConfigManager()
-
-download = []
-for show, last_watched in config.subscriptions:
-    episodes = p.get_episodes(show)
-    new = filter(lambda s: s["episode"] > last_watched, episodes)
-    download.extend(new)
-
+parser = Parser()
+episodes = parser.get_episodes("tower of god")
+episode1_magnet = episodes[0]["1080"]["Magnet"]
+call(["xdg-open", episode1_magnet])
 ```
 
 ### Using the Parser
