@@ -90,6 +90,8 @@ When referring to an episode, the actual representation of it is an object of th
 A powerful tool for managing and downloading anime in an automatic manner. To run it, simply call `horrible-downloader`.
 The CLI is simple, yet effective. It allows you to download the current airing anime, based on your specified subscriptions ([see Configuration](#configuration)), and downloading all the episodes of a desired anime.
 
+![horrible-downloader cli in action](https://i.imgur.com/C07za5E.gif)
+
 #### Featurs:
 * use **_horriblesubs_** from the command line.
 * minimal configuration
