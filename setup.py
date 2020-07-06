@@ -15,7 +15,7 @@ class custom_install(install):
 
 setup(
     name='horrible-downloader',
-    version='1.1.0',
+    version='1.1.1',
     packages=['HorribleDownloader'],
     url='https://github.com/mtshrmn/horrible-downloader',
     license='MIT',

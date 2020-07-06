@@ -152,8 +152,6 @@ def main():
 
     logger = logging.getLogger("info")
 
-    clear()
-
     if not args.config:
         config = ConfigManager()
     else:
@@ -184,6 +182,8 @@ def main():
     if args.list_current:
         print("\n".join(parser.current_shows.keys()))
         exit(0)
+
+    clear()
 
     if args.output:
         config.download_dir = args.output
