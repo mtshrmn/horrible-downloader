@@ -206,7 +206,7 @@ def main():
                 return True
             return episode_filter(float(episode["episode"]), args.episodes)
 
-        filtered_episodes = list(filter(should_download, episodes))
+        filtered_episodes = list(reversed(filter(should_download, episodes)))
         if not args.quiet:
             clear()
             dots = "." * (50 - len(title))
@@ -256,7 +256,7 @@ def main():
 
     downloads_list = []
     for episodes in downloads.values():
-        for episode in episodes:
+        for episode in reversed(episodes):
             downloads_list.append(episode)
 
     if downloads_list == []:
