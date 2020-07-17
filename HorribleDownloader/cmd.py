@@ -256,8 +256,7 @@ def main():
 
     downloads_list = []
     for episodes in downloads.values():
-        for episode in reversed(episodes):
-            downloads_list.append(episode)
+        downloads_list.extend(reversed(episodes))
 
     if downloads_list == []:
         if not args.quiet:
