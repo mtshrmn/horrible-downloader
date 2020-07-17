@@ -227,7 +227,6 @@ def main():
 
         for episode in filtered_episodes:
             download(episode, qualities, config.download_dir)
-            config.update_entry(title, episode["episode"])
         exit(0)
 
 
