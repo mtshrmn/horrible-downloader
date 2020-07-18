@@ -92,7 +92,7 @@ The CLI is simple, yet effective. It allows you to download the current airing a
 
 ![horrible-downloader cli in action](https://i.imgur.com/C07za5E.gif)
 
-#### Featurs:
+#### Features:
 * use **_horriblesubs_** from the command line.
 * minimal configuration
 * supports download resuming -- continue exactly where you left!
