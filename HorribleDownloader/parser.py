@@ -1,8 +1,8 @@
-from bs4 import BeautifulSoup
-import requests
-import re
-from rapidfuzz import process
 from typing import Iterable
+import re
+import requests
+from bs4 import BeautifulSoup
+from rapidfuzz import process
 
 
 class Parser:
