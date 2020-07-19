@@ -99,7 +99,7 @@ The CLI is simple, yet effective. It allows you to download the current airing a
 * allows for smart episode specification parsing
 
 #### Flags & Options:
-The CLI supports manual downloads of different animes with various options.
+The CLI supports manual downloads of different anime with various options.
 Full list of flags and options:
 ```
 $ horrible-downloader --help
