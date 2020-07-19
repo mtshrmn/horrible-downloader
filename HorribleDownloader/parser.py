@@ -130,6 +130,17 @@ class Parser:
         batch_stop_text = "There are no batches for this show yet"
         stop_text = show_stop_text if show_type == "show" else batch_stop_text
         return self._get_html(stop_text, query, limit)
+
+    def _get_search_html(self, show: str, limit=12) -> str:
+        query = {"method": "search", "value": show}
+        stop_text = "Please refine your search term"
+        return self._get_html(stop_text, query, limit)
+
+    def _get_latest_html(self, limit=12) -> str:
+        query = {"method": "getlatest"}
+        stop_text = "Please use search instead"
+        return self._get_html(stop_text, query, limit)
+
     def _get_show_id(self, title: str) -> int:
         # the horriblesubs api works with shows id
         # the id is a numeric value based on the order it was added to the site.
