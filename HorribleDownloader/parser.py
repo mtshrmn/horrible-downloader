@@ -54,32 +54,25 @@ class Parser:
         return ret
 
     @staticmethod
-    def _get_html(showid: int, limit: int, show_type: str) -> str:
-        # another thing to note - the horriblesubs api runs in reverse
+    def _get_html(stop_text: str, query: dict, limit: int) -> str:
+        # the horriblesubs api runs in reverse
         # which means the first element will be the most recent episode
-        # that guarantees us that the first episode will be the last element.1
+        # that guarantees us that the first episode will be the last element
         api = "https://horriblesubs.info/api.php"
         # the horriblesubs api returns html to be inserted directly into the site,
         # because the api works with pagination
         # we have a blank html variable that we'll append data onto.
         html = ""
         # the pagination is controlled by the `nextid` parameter.
+        query["nextid"] = 0
         # if there are episodes, it will return the html,
         # otherwise it will return an end string (stop_text)
-        # the end string is different for regular episodes and for batches
-        show_stop_text = "DONE"
-        batch_stop_text = "There are no batches for this show yet"
-        stop_text = show_stop_text if show_type == "show" else batch_stop_text
-        query = {
-            "method": "getshows",
-            "showid": showid,
-            "nextid": 0,
-            "type": show_type
-        }
-        # our python wrapper doesn't use pagination, so it must run over all the pages.
+        # the end string is different for each query
+        # our python wrapper doesn't use pagination,
+        # so it must run over all the pages.
         # because some shows have a huge amount of episodes
         # we want to specify a limit for the amount.
-        # sometimes we just care about the most recent episode.
+        # (sometimes we just care about only one recent episode)
         while True:
             response = requests.get(api, params=query)
             # the limit is counted in number of episodes (or batches)
