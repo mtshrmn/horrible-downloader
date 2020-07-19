@@ -85,16 +85,18 @@ class Parser:
         return html
 
     @staticmethod
-    def _parse_html(html: str) -> Iterable[dict]:
+    def _parse_getshows_html(html: str) -> Iterable[dict]:
         soup = BeautifulSoup(html, "lxml")
         episodes = soup.find_all("div", {"class": "rls-info-container"})
 
         for episode in episodes:
+            rls_label = episode.find(name="a", attrs={"class": "rls-label"})
             downloads = episode.find("div", {"class": "rls-links-container"})
             links = downloads.find_all("a", href=True)
             # the episode object, for now, we only know the episode number
             # all that is left is to add the URIs
             ret = {
+                "title": rls_label.find(text=True, recursive=False).strip(" "),
                 "episode": episode.find("strong").text.replace('v2', ''),
                 "480": {},
                 "720": {},
@@ -118,6 +120,16 @@ class Parser:
 
             yield ret
 
+    def _get_shows_html(self, showid: int, limit: int, show_type: str) -> str:
+        query = {
+            "method": "getshows",
+            "showid": showid,
+            "type": show_type
+        }
+        show_stop_text = "DONE"
+        batch_stop_text = "There are no batches for this show yet"
+        stop_text = show_stop_text if show_type == "show" else batch_stop_text
+        return self._get_html(stop_text, query, limit)
     def _get_show_id(self, title: str) -> int:
         # the horriblesubs api works with shows id
         # the id is a numeric value based on the order it was added to the site.
@@ -138,13 +150,8 @@ class Parser:
     def _get_uris(self, show: str, show_type: str, limit: int) -> list:
         title = self.get_proper_title(show)
         showid = self._get_show_id(title)
-        shows_html = self._get_html(showid, limit, show_type)
+        shows_html = self._get_shows_html(showid, limit, show_type)
         # as discussed in https://github.com/Jelomite/horrible-downloader/issues/24
         # to reduce confusion, the length of episodes should be equal to the limit
-        episodes = list(self._parse_html(shows_html))[:limit]
-        # for each episode, append a title argument.
-        # it's not ideal. it's for backward compatibility.
-        # TODO: remove this in veriosn 2.0
-        for episode in episodes:
-            episode.update({"title": title})
+        episodes = list(self._parse_getshows_html(shows_html))[:limit]
         return episodes
