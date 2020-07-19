@@ -14,14 +14,14 @@
 
 ## Dependencies
 **_horrible-downloader_** uses [WebTorrent-CLI](https://github.com/webtorrent/webtorrent-cli) to download its magnets.
-The dependency is automatically downloaded with the installation script, but for those who want to install it manualy - simply run ```npm install webtorrent-cli -g```.
+The dependency is automatically downloaded with the installation script, but for those who want to install it manually - simply run ```npm install webtorrent-cli -g```.
 
 **NOTE:** _WebTorrent_ is a NodeJS application, which means you must have Node installed.
 
 ## Documentation
 
 #### Usage
-example usage of the API inside of Python:
+Example usage of the API inside of Python:
 ```python
 from HorribleDownloader import Parser
 from subprocess import call
@@ -33,14 +33,14 @@ call(["xdg-open", episode1_magnet])
 ```
 
 ### Using the Parser
-for us to do simple interactions with the API we must first initiate a parser object using the `HorribleDownloader.Parser()`.
+For us to do simple interactions with the API we must first initiate a parser object using the `HorribleDownloader.Parser()`.
 
-The parser will allow us to fetch data from [horriblesubs](horriblesubs.info). here are the methods and properties:
+The parser will allow us to fetch data from [horriblesubs](horriblesubs.info). Here are the methods and properties:
 
-- **shows** - List all available shows. equivalent to https://horriblesubs.info/shows/.
-- **current_shows** - List all currently airing shows. equivalent to https://horriblesubs.info/current-season/.
+- **shows** - List all available shows. Equivalent to https://horriblesubs.info/shows/.
+- **current_shows** - List all currently airing shows. Equivalent to https://horriblesubs.info/current-season/.
 - **get_proper_title(title: str, min_threshold=0)** - Returns the exact title using fuzzy string matching.
-- **get_episodes(show: str, limit=1000, batches=False)** - Returns a list of episodes from the specified show. By default will return the last 1000 episodes (of course, most shows don't even reach the 100th episode). If `batches` is set to true, it'll simply run as `get_batches` with the same arguments. The function works in reverse, this means the _limit_ argument goes from the latest episode until it reaches its limit (or it has reached the first episode). E.g:
+- **get_episodes(show: str, limit=1000, batches=False)** - Returns a list of episodes from the specified show. By default will return the last 1000 episodes (of course, most shows don't even reach the 100th episode). If `batches` is set to true, it'll simply run as `get_batches` with the same arguments. The function works in reverse, this means the _limit_ argument goes from the latest episode until it reaches its limit (or it has reached the first episode). E.g.:
 ``` python
 parser = Parser()
 episodes = parser.get_episodes("one piece", limit=7)
@@ -93,13 +93,13 @@ The CLI is simple, yet effective. It allows you to download the current airing a
 ![horrible-downloader cli in action](https://i.imgur.com/C07za5E.gif)
 
 #### Features:
-* use **_horriblesubs_** from the command line.
+* use **_horriblesubs_** from the command line
 * minimal configuration
-* supports download resuming -- continue exactly where you left!
-* allows for smart episode specification parsing.
+* supports download resuming - continue exactly where you left!
+* allows for smart episode specification parsing
 
 #### Flags & Options:
-The CLI supports manual download of different anime with various options.
+The CLI supports manual downloads of different anime with various options.
 Full list of flags and options:
 ```
 $ horrible-downloader --help
@@ -122,20 +122,20 @@ optional arguments:
   -c CONFIG, --config CONFIG                 config file location
   --noconfirm                                bypass any and all “Are you sure?” messages.
 ```
-##### Episodes & Resolution Formating:
+##### Episodes & Resolution Formatting:
 Those two flags have a special syntax which allows for a better specification interface.
 
 ###### When using **_episodes_** flag, you can use the following:
 
-|character|usage|example|
+|Character|Usage|Example|
 |---------|-----|-----|
-|,| allows to specify more than one episode or option.|1,6|
-|-| specify a range of episodes, including start and end.| 4-10|
-|>| bigger than, must be last in order.| 7>|
-|<| smaller than, must be first in order.| <10|
-|=|equals, in conjunction with < or >, includes the episode number.| 11>=|
+|,| allows to specify more than one episode or option|1,6|
+|-| specify a range of episodes, including start and end| 4-10|
+|>| bigger than, must be last in order| 7>|
+|<| smaller than, must be first in order| <10|
+|=|equals, in conjunction with < or >, includes the episode number| 11>=|
 
-###### The **_resolution_** flag syntax is simple, just set the resoultions with the comma (,) between.
+###### The **_resolution_** flag syntax is simple, just separate the resolutions with a comma (,).
 
 `$  horrible-downloader -r 720,1080`
 
@@ -151,7 +151,7 @@ By default, the config file contains all of the current airing anime commented o
 
 **NOTE:** The order of the shows in the config file will affect the order of downloading.
 
-##### example config file:
+##### Example config file:
 ```
 [settings]
 resolution = 1080
