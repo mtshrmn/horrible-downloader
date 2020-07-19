@@ -59,13 +59,12 @@ def test_get_episodes():
     for limit in 0, 3, 12, 24, 28:
         title = parser.get_proper_title("one piece")
         showid = parser._get_show_id(title)
-        shows_html = parser._get_html(showid, limit, "show")
-        episodes = list(parser._parse_html(shows_html))
+        shows_html = parser._get_shows_html(showid, limit, "show")
+        episodes = list(parser._parse_getshows_html(shows_html))
         assert len(episodes) == 12 * round(limit / 12)
 
         proper_get_episodes = parser.get_episodes("one piece", limit=limit)
         for index, episode in enumerate(proper_get_episodes):
-            episode.pop("title")
             proper = episode.keys()
             non_proper = episodes[index].keys()
             error_msg = f"proper: {proper} \nnon proper: {non_proper}"
