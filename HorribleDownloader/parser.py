@@ -32,6 +32,12 @@ class Parser:
     def get_batches(self, show: str, limit=1000) -> list:
         return self._get_uris(show, "batch", limit)
 
+    def search(self, show: str) -> list:
+        pass
+
+    def get_latest(self, limit=12) -> list:
+        pass
+
     @staticmethod
     def _get_shows(page: str) -> dict:
         # instead of writing two identical functions (shows, current_shows),
