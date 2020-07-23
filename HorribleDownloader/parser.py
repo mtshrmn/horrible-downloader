@@ -126,6 +126,19 @@ class Parser:
 
             yield ret
 
+    @staticmethod
+    def _parse_bullet_html(html: str) -> Iterable[dict]:
+        # getshows and the rest methods return different html structure
+        # so we have to parse it differently.
+        soup = BeautifulSoup(html, "lxml")
+        entries = soup.find_all("a")
+
+        for entry in entries:
+            yield {
+                "title": entry.find(text=True, recursive=False).strip(" "),
+                "episode": entry.find("strong").text.replace('v2', '')
+            }
+
     def _get_shows_html(self, showid: int, limit: int, show_type: str) -> str:
         query = {
             "method": "getshows",
