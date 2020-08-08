@@ -56,14 +56,16 @@ def test_get_proper_title():
 def test_get_episodes():
     # without mocking, we'll do live testing on the website.
     parser = Parser()
-    for limit in 0, 3, 12, 24, 28:
+    for limit in 0, 3, 11, 12, 13, 24, 28:
         title = parser.get_proper_title("one piece")
         showid = parser._get_show_id(title)
         shows_html = parser._get_html(showid, limit, "show")
         episodes = list(parser._parse_html(shows_html))
-        assert len(episodes) == 12 * round(limit / 12)
+        assert len(episodes) == 12 * (((limit - 1) // 12) + 1)
 
         proper_get_episodes = parser.get_episodes("one piece", limit=limit)
+        assert len(proper_get_episodes) == limit
+
         for index, episode in enumerate(proper_get_episodes):
             episode.pop("title")
             proper = episode.keys()
