@@ -84,7 +84,7 @@ class Parser:
             response = requests.get(api, params=query)
             # the limit is counted in number of episodes (or batches)
             # because each page contains 12 episodes, we must divide it by 12.
-            if response.text == stop_text or query["nextid"] >= limit // 12:
+            if response.text == stop_text or query["nextid"] > limit // 12:
                 break
             html += response.text
             query["nextid"] += 1
