@@ -61,9 +61,11 @@ def test_get_episodes():
         showid = parser._get_show_id(title)
         shows_html = parser._get_html(showid, limit, "show")
         episodes = list(parser._parse_html(shows_html))
-        assert len(episodes) == 12 * round(limit / 12)
+        assert len(episodes) == 12 * (round(limit / 12) + 1)
 
         proper_get_episodes = parser.get_episodes("one piece", limit=limit)
+        assert len(proper_get_episodes) == limit
+
         for index, episode in enumerate(proper_get_episodes):
             episode.pop("title")
             proper = episode.keys()
