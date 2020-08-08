@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-from rapidfuzz import process
+from rapidfuzz import process, fuzz
 from typing import Iterable
 
 
@@ -18,7 +18,7 @@ class Parser:
         # because we're dealing with html, there will be character references.
         # there might be other references other than the ampersand.
         title = title.replace("&amp;", "&")
-        proper_title, ratio = process.extractOne(title, self.shows.keys())
+        proper_title, ratio = process.extractOne(title, self.shows.keys(), scorer=fuzz.token_set_ratio)
         # if the proper_title is too different than the title, return "".
         if ratio <= min_threshold:
             return ""
