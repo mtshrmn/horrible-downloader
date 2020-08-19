@@ -224,11 +224,14 @@ def main():
                 if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
                     print(fg(1) + 'aborting download\n' + fg.rs)
                     exit(1)
-
-        for episode in filtered_episodes:
-            download(episode, qualities, config.download_dir)
+                          
+        if args.export:
+            for episode in filtered_episodes:
+                print(episode[quality]['Magnet'])
+        else:
+            for episode in filtered_episodes:
+                download(episode, qualities, config.download_dir)
         exit(0)
-
 
     manager = Manager()
     initial_downloads_dict = {parser.get_proper_title(title): None for title in config.subscriptions.keys()}
@@ -280,12 +283,16 @@ def main():
             logger.info("user has aboorted the download")
             exit(1)
 
-
-    for episode in downloads_list:
-        download(episode, qualities, config.download_dir)
-        config.update_entry(episode["title"], episode["episode"])
-        logger.info(f'updated entry: {episode["title"]} - {episode["episode"]}')
+    if args.export:
+        for episode in downloads_list:
+            print(episode[quality]['Magnet'])
+            config.update_entry(episode["title"], episode["episode"])
+    else:
+        for episode in downloads_list:
+            download(episode, qualities, config.download_dir)
+            config.update_entry(episode["title"], episode["episode"])
+            logger.info(f'updated entry: {episode["title"]} - {episode["episode"]}')
     exit(0)
-
+ 
 if __name__ == "__main__":
     main()
