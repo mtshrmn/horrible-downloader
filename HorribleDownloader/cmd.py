@@ -101,6 +101,9 @@ def download(episode, qualities, path):
         call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"",
              shell=True)
 
+def print_magnet(episode, qualities):
+    for quality in qualities:
+        print(episode[quality]['Magnet'])
 
 def fetch_episodes(show_entry, shared_dict, lock, parser, batches, quiet):
     show_title, last_watched = show_entry
@@ -148,6 +151,7 @@ def main():
     argparser.add_argument("-lc", "--list-current", help="list all currently airing shows", action="store_true")
     argparser.add_argument("-c", "--config", help="config file location", type=str)
     argparser.add_argument("--noconfirm", help="Bypass any and all “Are you sure?” messages.", action="store_true")
+    argparser.add_argument("-x", "--export", help="Export mangnet links to standard output", action="store_true")
     args = argparser.parse_args()
 
     logger = logging.getLogger("info")
@@ -225,8 +229,12 @@ def main():
                     print(fg(1) + 'aborting download\n' + fg.rs)
                     exit(1)
 
-        for episode in filtered_episodes:
-            download(episode, qualities, config.download_dir)
+        if args.export:
+            for episode in filtered_episodes:
+                print_magnet(episode, qualities)
+        else:
+            for episode in filtered_episodes:
+                download(episode, qualities, config.download_dir)
         exit(0)
 
 
@@ -280,11 +288,15 @@ def main():
             logger.info("user has aboorted the download")
             exit(1)
 
-
-    for episode in downloads_list:
-        download(episode, qualities, config.download_dir)
-        config.update_entry(episode["title"], episode["episode"])
-        logger.info(f'updated entry: {episode["title"]} - {episode["episode"]}')
+    if args.export:
+        for episode in downloads_list:
+            print_magnet(episode, qualities)
+            config.update_entry(episode["title"], episode["episode"])
+    else:
+        for episode in downloads_list:
+            download(episode, qualities, config.download_dir)
+            config.update_entry(episode["title"], episode["episode"])
+            logger.info(f'updated entry: {episode["title"]} - {episode["episode"]}')
     exit(0)
 
 if __name__ == "__main__":

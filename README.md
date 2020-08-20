@@ -121,6 +121,7 @@ optional arguments:
   --batch                                    search for batches as well as regular files
   -c CONFIG, --config CONFIG                 config file location
   --noconfirm                                bypass any and all “Are you sure?” messages.
+  -x, --export                               export magnet links to standard output
 ```
 ##### Episodes & Resolution Formatting:
 Those two flags have a special syntax which allows for a better specification interface.
@@ -138,6 +139,18 @@ Those two flags have a special syntax which allows for a better specification in
 ###### The **_resolution_** flag syntax is simple, just separate the resolutions with a comma (,).
 
 `$  horrible-downloader -r 720,1080`
+
+##### Exporting magnet links:
+
+**NOTE:** The **_export_** flag is not mutually inclusive with the **_quiet_** flag. If you wish to only output magnet links for scripting please include **_quiet_**.
+
+###### To only output magnet links while using config file subscription entries
+
+`$ horrible-downloader -x`
+
+###### To output only magnet links (oneshot)
+
+`$ horrible-downloader -d "one punch man" -x`
 
 ##### Example usage:
 The command for downloading episodes 1,2,4,5,6 of "One-Punch Man" to the `~/Videos/Anime` folder:
