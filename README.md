@@ -142,6 +142,8 @@ Those two flags have a special syntax which allows for a better specification in
 
 ##### Exporting magnet links:
 
+**NOTE:** The **_export_** flag is not mutually inclusive with the **_quiet_** flag. If you wish to only output magnet links for scripting please include **_quiet_**.
+
 ###### To only output magnet links while using config file subscription entries
 
 `$ horrible-downloader -x`
