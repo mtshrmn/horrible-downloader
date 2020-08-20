@@ -101,6 +101,9 @@ def download(episode, qualities, path):
         call(f"webtorrent \"{episode[quality]['Magnet']}\" -o \"{subdir}\"",
              shell=True)
 
+def print_magnet(episode, qualities):
+    for quality in qualities:
+        print(episode[quality]['Magnet'])
 
 def fetch_episodes(show_entry, shared_dict, lock, parser, batches, quiet):
     show_title, last_watched = show_entry
@@ -148,6 +151,7 @@ def main():
     argparser.add_argument("-lc", "--list-current", help="list all currently airing shows", action="store_true")
     argparser.add_argument("-c", "--config", help="config file location", type=str)
     argparser.add_argument("--noconfirm", help="Bypass any and all “Are you sure?” messages.", action="store_true")
+    argparser.add_argument("-x", "--export", help="Export mangnet links to standard output", action="store_true")
     args = argparser.parse_args()
 
     logger = logging.getLogger("info")
@@ -224,14 +228,15 @@ def main():
                 if inp not in ('', 'Y', 'y', 'yes', 'Yes'):
                     print(fg(1) + 'aborting download\n' + fg.rs)
                     exit(1)
-                          
+
         if args.export:
             for episode in filtered_episodes:
-                print(episode[quality]['Magnet'])
+                print_magnet(episode, qualities)
         else:
             for episode in filtered_episodes:
                 download(episode, qualities, config.download_dir)
         exit(0)
+
 
     manager = Manager()
     initial_downloads_dict = {parser.get_proper_title(title): None for title in config.subscriptions.keys()}
@@ -285,7 +290,7 @@ def main():
 
     if args.export:
         for episode in downloads_list:
-            print(episode[quality]['Magnet'])
+            print_magnet(episode, qualities)
             config.update_entry(episode["title"], episode["episode"])
     else:
         for episode in downloads_list:
@@ -293,6 +298,6 @@ def main():
             config.update_entry(episode["title"], episode["episode"])
             logger.info(f'updated entry: {episode["title"]} - {episode["episode"]}')
     exit(0)
- 
+
 if __name__ == "__main__":
     main()
