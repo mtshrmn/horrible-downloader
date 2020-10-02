@@ -2,7 +2,8 @@
 
 ![horrible subs banner](https://i.imgur.com/jWulipo.png)
 
-
+### Horriblesubs is no longer active.
+#### Thank you everyone for helping to develop this library. As of today, this repository will be archived and no longer be maintained. 
 
 *Horrible Downloader* is a Python wrapper around the [HorribleSubs](https://horriblesubs.info/) API. It comes with a powerful set of extra features, which allow users to automatically download new episodes and batches of existing shows. The module tracks the downloaded files and allows you to continue from where you left.
 
